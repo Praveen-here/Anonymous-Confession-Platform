@@ -1,0 +1,17 @@
+/* Custom styles */
+#sidebar {
+    transition: transform 0.3s ease;
+}
+
+#sidebar.hidden {
+    transform: translateX(-100%);
+}
+
+#aboutSection, #createPost {
+    transition: opacity 0.3s ease;
+}
+
+#aboutSection.hidden, #createPost.hidden {
+    opacity: 0;
+    pointer-events: none;
+}

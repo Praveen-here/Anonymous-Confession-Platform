@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>BCU Confession Site</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="finalstyle.css"/>
+</head>
+<body class="bg-white text-black font-sans">
+    <!-- Navbar -->
+    <div class="flex items-center justify-between p-4 border-b border-gray-300">
+        <i class="fas fa-bars text-2xl cursor-pointer" id="menuButton"></i>
+        <h1 class="text-xl font-bold">BCU Confession Site</h1>
+        <div></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" id="sidebar">
+        <div class="bg-white w-64 h-full p-4">
+            <h2 class="text-xl font-bold mb-4 cursor-pointer" id="aboutButton">About</h2>
+            <h2 class="text-xl font-bold cursor-pointer" onclick="window.location.href='admin.html'">Admin Login</h2>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <div class="fixed inset-0 bg-white z-50 hidden" id="aboutSection">
+        <div class="p-4">
+            <i class="fas fa-arrow-left text-2xl cursor-pointer" id="aboutBackButton"></i>
+            <h1 class="text-xl font-bold">About</h1>
+            <p>This site is a platform for anonymous confessions. Post your thoughts and have fun!</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="p-4 space-y-4" id="postsContainer">
+        <!-- Posts will be dynamically loaded here -->
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fixed bottom-4 right-4">
+        <button class="bg-white text-black p-4 rounded-full shadow-lg border border-black" id="createPostButton">
+            <i class="fas fa-plus text-2xl"></i>
+        </button>
+    </div>
+
+    <!-- Create Post -->
+    <div class="fixed inset-0 bg-white z-50 hidden" id="createPost">
+        <div class="flex items-center justify-between p-4 border-b border-gray-300">
+            <i class="fas fa-arrow-left text-2xl cursor-pointer" id="createPostBackButton"></i>
+            <h1 class="text-xl font-bold">Create</h1>
+            <button class="border border-black px-4 py-2 rounded-lg" id="submitPostButton">Post</button>
+        </div>
+        <div class="p-4">
+            <textarea class="w-full h-32 p-2 border border-gray-300 rounded-lg" placeholder="Share what's on your mind" id="postContent"></textarea>
+        </div>
+    </div>
+
+    <script src="finalscript.js"></script>
+</body>
+</html>
