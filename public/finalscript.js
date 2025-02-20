@@ -152,8 +152,9 @@ async function fetchComments(postId) {
         const comments = await response.json();
         const commentsContainer = document.getElementById(`commentsContainer-${postId}`);
         
+        // Added 🗨 symbol before each comment
         commentsContainer.innerHTML = comments.map(comment => 
-            `<p class="text-gray-600">${comment.content}</p>`
+            `<p class="text-gray-600 mt-2">🗨 ${comment.content}</p>`
         ).join('');
     } catch (error) {
         console.error('Error fetching comments:', error);
