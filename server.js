@@ -12,19 +12,35 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
+// server.js
 app.use(cors({
-  origin: true,
-  credentials: true
-}));
+    origin: 'http://localhost:3000', // Replace with your frontend URL
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV === 'production' }
-}));
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 3600000 // 1 hour
+    }
+  }));
 
+  // Add after session middleware
+app.use((req, res, next) => {
+    if (req.session && req.session.isAdmin) {
+      req.session.touch();
+      req.session.save();
+    }
+    next();
+  });
+  
 // MongoDB Connection
 const mongoURI = process.env.MONGODB_URI;
 mongoose.connect(mongoURI, {
@@ -90,6 +106,12 @@ const bannerSchema = new mongoose.Schema({
 const Banner = mongoose.model('Banner', bannerSchema);
 
 // Routes
+// Add to server.js routes
+app.get('/api/clear-cache', (req, res) => {
+    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.send('Cache cleared');
+  });
+
 // Posts routes
 app.post('/api/posts', async (req, res) => {
     try {

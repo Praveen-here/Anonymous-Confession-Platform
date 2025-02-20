@@ -15,62 +15,51 @@
         </form>
     </div>
 
-    <!-- upload.html -->
-<script>
-    // Updated checkAuth function with proper credentials
-    async function checkAuth() {
-        try {
-            const response = await fetch('/api/admin/check', {
-                credentials: 'include' // ← This is crucial
-            });
-            
-            if (!response.ok) {
-                window.location.href = "admin.html";
-                return;
-            }
-            
-            // Additional check for JSON response
-            const data = await response.json();
-            if (!data.authenticated) {
+    <script>
+        // Properly formatted JavaScript
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/admin/check', {
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    window.location.href = "admin.html";
+                }
+            } catch (error) {
                 window.location.href = "admin.html";
             }
-        } catch (error) {
-            console.error('Auth check error:', error);
-            window.location.href = "admin.html";
         }
-    }
 
-    // Updated form submission with error handling
-    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        try {
-            const formData = new FormData();
-            const fileInput = document.getElementById('bannerImage');
-            formData.append('banner', fileInput.files[0]);
-
-            const response = await fetch('/api/upload', {
-                method: 'POST',
-                body: formData,
-                credentials: 'include' // ← Important for session cookie
-            });
-
-            const result = await response.json();
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            if (response.ok) {
-                alert('Banner updated successfully!');
-                window.location.href = "/";
-            } else {
-                alert(result.message || 'Error uploading banner');
-            }
-        } catch (error) {
-            console.error('Upload error:', error);
-            alert('Failed to upload banner. Please try again.');
-        }
-    });
+            try {
+                const formData = new FormData();
+                const fileInput = document.getElementById('bannerImage');
+                formData.append('banner', fileInput.files[0]);
 
-    // Initial auth check
-    checkAuth();
-</script>
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    alert('Banner updated successfully!');
+                    window.location.href = "/";
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Error uploading banner');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                alert('Failed to upload banner. Please try again.');
+            }
+        });
+
+        // Initialize auth check
+        checkAuth();
+    </script>
 </body>
-</html> 
+</html>

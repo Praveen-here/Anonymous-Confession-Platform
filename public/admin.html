@@ -15,6 +15,7 @@
     </div>
 
     <!-- admin.html -->
+<!-- admin.html -->
 <script>
     async function login() {
         const username = document.getElementById("username").value;
@@ -27,15 +28,21 @@
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ username, password }),
-                credentials: 'include' // ← Add this
+                credentials: 'include'
             });
 
             const result = await response.json();
             if (result.success) {
-                // Add slight delay for session to be set
-                setTimeout(() => {
+                // Verify session before redirect
+                const checkResponse = await fetch('/api/admin/check', {
+                    credentials: 'include'
+                });
+                
+                if (checkResponse.ok) {
                     window.location.href = "upload.html";
-                }, 100);
+                } else {
+                    alert('Session verification failed');
+                }
             } else {
                 alert(result.message || 'Invalid credentials!');
             }
