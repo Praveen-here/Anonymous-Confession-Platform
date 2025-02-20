@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Banner Upload</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h1 class="text-xl font-bold mb-4 text-center">Upload Banner Image</h1>
+        <form id="uploadForm">
+            <input type="file" id="bannerImage" accept="image/*" class="mb-4" required>
+            <button type="submit" class="w-full bg-black text-white py-2 rounded">Upload Banner</button>
+        </form>
+    </div>
+
+    <script>
+        // Check admin authentication
+        if(localStorage.getItem("isAdmin") !== "true") {
+            window.location.href = "admin.html";
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const fileInput = document.getElementById('bannerImage');
+            formData.append('banner', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if(response.ok) {
+                    alert('Banner updated successfully!');
+                    window.location.href = "/";
+                } else {
+                    alert('Error uploading banner');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to upload banner');
+            }
+        });
+    </script>
+</body>
+</html>
