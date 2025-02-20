@@ -7,18 +7,18 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-// server.js
 app.use(cors({
-    origin: 'http://localhost:3000', // Replace with your frontend URL
+    origin: 'http://localhost:3000',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
-  }));
+}));
 app.use(bodyParser.json());
 app.use(express.static('public'));
 app.use(session({
@@ -26,64 +26,23 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 3600000 // 1 hour
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 3600000
     }
-  }));
+}));
 
-  // Add after session middleware
-app.use((req, res, next) => {
-    if (req.session && req.session.isAdmin) {
-      req.session.touch();
-      req.session.save();
-    }
-    next();
-  });
-  
 // MongoDB Connection
 const mongoURI = process.env.MONGODB_URI;
 mongoose.connect(mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
-.then(() => console.log('Connected to MongoDB Atlas'))
+.then(() => {
+    console.log('Connected to MongoDB Atlas');
+    initializeAdmin();
+})
 .catch(err => console.error('MongoDB Atlas connection error:', err));
-
-// Configure Multer for file uploads (moved up for better organization)
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadDir = path.join(__dirname, 'public/uploads');
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, `banner-${Date.now()}${path.extname(file.originalname)}`);
-    }
-});
-
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only image files are allowed!'));
-        }
-    }
-});
-
-// Auth middleware
-const authenticateAdmin = (req, res, next) => {
-    if (req.session.isAdmin) {
-        next();
-    } else {
-        res.status(401).json({ message: 'Unauthorized' });
-    }
-};
 
 // Schemas
 const postSchema = new mongoose.Schema({
@@ -105,12 +64,75 @@ const bannerSchema = new mongoose.Schema({
 
 const Banner = mongoose.model('Banner', bannerSchema);
 
+const adminSchema = new mongoose.Schema({
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true }
+});
+
+const Admin = mongoose.model('Admin', adminSchema);
+
+// Initialize admin account
+async function initializeAdmin() {
+    const adminCount = await Admin.countDocuments();
+    if (adminCount === 0) {
+        const hashedPassword = await bcrypt.hash('admin123', 10);
+        const admin = new Admin({
+            username: 'admin',
+            password: hashedPassword
+        });
+        await admin.save();
+        console.log('Default admin created');
+    }
+}
+
+// Configure Multer
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadDir = path.join(__dirname, 'public/uploads');
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        cb(null, `banner-${Date.now()}${path.extname(file.originalname)}`);
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed!'));
+        }
+    }
+});
+
+// Authentication middleware
+const authenticateAdmin = async (req, res, next) => {
+    if (!req.session.adminId) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+    
+    try {
+        const admin = await Admin.findById(req.session.adminId);
+        if (!admin) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        next();
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 // Routes
-// Add to server.js routes
 app.get('/api/clear-cache', (req, res) => {
     res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.send('Cache cleared');
-  });
+});
 
 // Posts routes
 app.post('/api/posts', async (req, res) => {
@@ -130,11 +152,22 @@ app.post('/api/posts', async (req, res) => {
 app.post('/api/admin/login', async (req, res) => {
     const { username, password } = req.body;
     
-    if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
-        req.session.isAdmin = true;
+    try {
+        const admin = await Admin.findOne({ username });
+        if (!admin) {
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        const validPassword = await bcrypt.compare(password, admin.password);
+        if (!validPassword) {
+            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        }
+
+        req.session.adminId = admin._id;
         res.json({ success: true });
-    } else {
-        res.status(401).json({ success: false, message: 'Invalid credentials' });
+    } catch (error) {
+        console.error('Login error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 });
 
@@ -147,7 +180,7 @@ app.post('/api/admin/logout', (req, res) => {
     res.json({ success: true });
 });
 
-// Banner routes (updated with authentication)
+// Banner routes
 app.get('/api/banner', async (req, res) => {
     try {
         const banner = await Banner.findOne().sort({ updatedAt: -1 });
@@ -182,7 +215,7 @@ app.post('/api/upload',
     }
 );
 
-// Other post-related routes
+// Post interaction routes
 app.get('/api/posts', async (req, res) => {
     try {
         const posts = await Post.find().sort({ createdAt: -1 });
