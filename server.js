@@ -11,8 +11,6 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
-
-// Serve frontend files
 app.use(express.static('public'));
 
 // MongoDB Connection
@@ -24,25 +22,24 @@ mongoose.connect(mongoURI, {
 .then(() => console.log('Connected to MongoDB Atlas'))
 .catch(err => console.error('MongoDB Atlas connection error:', err));
 
-// Post Schema
+// Updated Post Schema with likes
 const postSchema = new mongoose.Schema({
     content: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
     comments: [{
         content: { type: String, required: true },
         createdAt: { type: Date, default: Date.now }
-    }]
+    }],
+    likes: { type: Number, default: 0 }
 });
 
 const Post = mongoose.model('Post', postSchema);
 
-// Create a new post
+// Routes
 app.post('/api/posts', async (req, res) => {
     try {
         const { content } = req.body;
-        if (!content) {
-            return res.status(400).json({ message: 'Post content cannot be empty!' });
-        }
+        if (!content) return res.status(400).json({ message: 'Post content cannot be empty!' });
         const newPost = new Post({ content });
         await newPost.save();
         res.status(201).json({ message: 'Post created successfully!' });
@@ -52,13 +49,29 @@ app.post('/api/posts', async (req, res) => {
     }
 });
 
-// Fetch all posts
 app.get('/api/posts', async (req, res) => {
     try {
         const posts = await Post.find().sort({ createdAt: -1 });
         res.status(200).json(posts);
     } catch (error) {
         console.error('Error fetching posts:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// New Like Endpoint
+app.post('/api/posts/:postId/like', async (req, res) => {
+    try {
+        const { postId } = req.params;
+        const post = await Post.findByIdAndUpdate(
+            postId,
+            { $inc: { likes: 1 } },
+            { new: true }
+        );
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+        res.status(200).json({ likes: post.likes });
+    } catch (error) {
+        console.error('Error liking post:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });
