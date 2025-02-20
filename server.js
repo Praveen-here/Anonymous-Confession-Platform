@@ -13,7 +13,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Serve frontend files
-app.use(express.static('public')); 
+app.use(express.static('public'));
 
 // MongoDB Connection
 const mongoURI = process.env.MONGODB_URI;
@@ -28,6 +28,10 @@ mongoose.connect(mongoURI, {
 const postSchema = new mongoose.Schema({
     content: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
+    comments: [{
+        content: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now }
+    }]
 });
 
 const Post = mongoose.model('Post', postSchema);
@@ -55,6 +59,48 @@ app.get('/api/posts', async (req, res) => {
         res.status(200).json(posts);
     } catch (error) {
         console.error('Error fetching posts:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Add a comment to a post
+app.post('/api/posts/:postId/comments', async (req, res) => {
+    try {
+        const { postId } = req.params;
+        const { content } = req.body;
+        
+        if (!content) {
+            return res.status(400).json({ message: 'Comment cannot be empty!' });
+        }
+
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        post.comments.push({ content });
+        await post.save();
+
+        res.status(201).json({ message: 'Comment added successfully!' });
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+// Fetch comments for a post
+app.get('/api/posts/:postId/comments', async (req, res) => {
+    try {
+        const { postId } = req.params;
+        const post = await Post.findById(postId);
+        
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
+        }
+
+        res.status(200).json(post.comments);
+    } catch (error) {
+        console.error('Error fetching comments:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 });

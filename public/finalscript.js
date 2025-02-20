@@ -99,10 +99,63 @@ async function fetchPosts() {
                     <p class="font-bold">Anonymous</p>
                 </div>
                 <p>${post.content}</p>
+                <button class="mt-2 text-blue-500" onclick="toggleCommentSection('${post._id}')">Comment</button>
+                <div id="commentSection-${post._id}" class="hidden">
+                    <input type="text" id="commentInput-${post._id}" placeholder="Write a comment..." class="border p-2 rounded w-full"/>
+                    <button onclick="submitComment('${post._id}')" class="mt-2 bg-blue-500 text-white p-1 rounded">Submit</button>
+                    <div id="commentsContainer-${post._id}"></div>
+                </div>
             </div>
         `).join('');
     } catch (error) {
         console.error('Error fetching posts:', error);
         alert('Failed to load posts. Please try again later.');
+    }
+}
+
+function toggleCommentSection(postId) {
+    document.getElementById(`commentSection-${postId}`).classList.toggle('hidden');
+    fetchComments(postId);
+}
+
+async function submitComment(postId) {
+    const commentInput = document.getElementById(`commentInput-${postId}`);
+    const comment = commentInput.value.trim();
+    
+    if (!comment) {
+        alert('Comment cannot be empty!');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/posts/${postId}/comments`, {
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ content: comment })  
+        });
+
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message || 'Failed to add comment');
+
+        commentInput.value = '';
+        fetchComments(postId); // Refresh comments after submitting
+    } catch (error) {
+        console.error('Error submitting comment:', error);
+    }
+}
+
+async function fetchComments(postId) {
+    try {
+        const response = await fetch(`/api/posts/${postId}/comments`);
+        if (!response.ok) throw new Error('Failed to fetch comments');
+
+        const comments = await response.json();
+        const commentsContainer = document.getElementById(`commentsContainer-${postId}`);
+        
+        commentsContainer.innerHTML = comments.map(comment => 
+            `<p class="text-gray-600">${comment.content}</p>`
+        ).join('');
+    } catch (error) {
+        console.error('Error fetching comments:', error);
     }
 }
