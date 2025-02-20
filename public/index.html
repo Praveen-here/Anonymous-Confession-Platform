@@ -63,27 +63,25 @@
     </div>
 
     <script src="finalscript.js"></script>
-    <script>
-        // Fetch and display banner
-        async function loadBanner() {
-            try {
-                const response = await fetch('/api/banner');
-                const banner = await response.json();
-                const bannerImage = document.getElementById('bannerImage');
-                
-                if (banner.imageUrl) {
-                    bannerImage.src = banner.imageUrl;
-                } else {
-                    // Set default banner if none exists
-                    bannerImage.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAACCAQAAAAe6ijXAAAADklEQVR42mNkQAXsYQYAATAEmcHjHXUAAAAASUVORK5CYII=';
-                }
-            } catch (error) {
-                console.error('Error loading banner:', error);
+    <!-- In the loadBanner function -->
+<script>
+    async function loadBanner() {
+        try {
+            const response = await fetch('/api/banner');
+            const banner = await response.json();
+            const bannerImage = document.getElementById('bannerImage');
+            
+            if (banner.imageUrl) {
+                // Add cache busting parameter
+                bannerImage.src = banner.imageUrl + '?v=' + Date.now();
+            } else {
+                bannerImage.src = 'data:image/png;base64,...'; // default image
             }
+        } catch (error) {
+            console.error('Error loading banner:', error);
         }
-    
-        // Call loadBanner when page loads
-        window.addEventListener('DOMContentLoaded', loadBanner);
-    </script>
+    }
+    window.addEventListener('DOMContentLoaded', loadBanner);
+</script>
 </body>
 </html>

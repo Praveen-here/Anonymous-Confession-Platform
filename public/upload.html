@@ -17,9 +17,18 @@
 
     <script>
         // Check admin authentication
-        if(localStorage.getItem("isAdmin") !== "true") {
-            window.location.href = "admin.html";
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/admin/check');
+                if (!response.ok) {
+                    window.location.href = "admin.html";
+                }
+            } catch (error) {
+                window.location.href = "admin.html";
+            }
         }
+        
+        checkAuth();
 
         document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -47,4 +56,4 @@
         });
     </script>
 </body>
-</html>
+</html> 
