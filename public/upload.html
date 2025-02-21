@@ -16,50 +16,46 @@
     </div>
 
     <script>
-        // Properly formatted JavaScript
-        async function checkAuth() {
-            try {
-                const response = await fetch('/api/admin/check', {
-                    credentials: 'include'
-                });
-                
-                if (!response.ok) {
-                    window.location.href = "admin.html";
-                }
-            } catch (error) {
-                window.location.href = "admin.html";
-            }
-        }
-
         document.getElementById('uploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            // Get credentials from localStorage
+            const stored = localStorage.getItem('tempCredentials');
+            if (!stored) {
+                alert('Session expired');
+                window.location.href = 'admin.html';
+                return;
+            }
+            
+            const { username, password } = JSON.parse(stored);
+            
             try {
                 const formData = new FormData();
-                const fileInput = document.getElementById('bannerImage');
-                formData.append('banner', fileInput.files[0]);
-
+                formData.append('banner', document.getElementById('bannerImage').files[0]);
+                formData.append('username', username);
+                formData.append('password', password);
+        
                 const response = await fetch('/api/upload', {
                     method: 'POST',
-                    body: formData,
-                    credentials: 'include'
+                    body: formData
                 });
-
+        
                 if (response.ok) {
-                    alert('Banner updated successfully!');
+                    alert('Banner updated!');
+                    localStorage.removeItem('tempCredentials');
                     window.location.href = "/";
                 } else {
-                    const error = await response.json();
-                    alert(error.message || 'Error uploading banner');
+                    alert('Upload failed');
                 }
             } catch (error) {
-                console.error('Upload error:', error);
-                alert('Failed to upload banner. Please try again.');
+                alert('Error uploading');
             }
         });
-
-        // Initialize auth check
-        checkAuth();
-    </script>
+        
+        // Clear credentials when leaving the page
+        window.addEventListener('beforeunload', () => {
+            localStorage.removeItem('tempCredentials');
+        });
+        </script>
 </body>
 </html>

@@ -6,32 +6,18 @@ const cors = require('cors');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
-const session = require('express-session');
 const bcrypt = require("bcryptjs");
-
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
+// Middleware Setup
 app.use(cors({
     origin: 'http://localhost:3000',
-    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(bodyParser.json());
-app.use(express.static('public'));
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 3600000
-    }
-}));
 
 // MongoDB Connection
 const mongoURI = process.env.MONGODB_URI;
@@ -112,76 +98,64 @@ const upload = multer({
     }
 });
 
-// Authentication middleware
-const authenticateAdmin = async (req, res, next) => {
-    if (!req.session.adminId) {
-        return res.status(401).json({ message: 'Unauthorized' });
-    }
-    
+// API Routes
+app.post('/api/admin/login', async (req, res) => {
+    const { username, password } = req.body;
     try {
-        const admin = await Admin.findById(req.session.adminId);
-        if (!admin) {
-            return res.status(401).json({ message: 'Unauthorized' });
-        }
-        next();
+        const admin = await Admin.findOne({ username });
+        if (!admin) return res.status(401).json({ success: false });
+        
+        const valid = await bcrypt.compare(password, admin.password);
+        res.json({ success: valid });
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        res.status(500).json({ success: false });
     }
-};
-
-// Routes
-app.get('/api/clear-cache', (req, res) => {
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    res.send('Cache cleared');
 });
 
-// Posts routes
 app.post('/api/posts', async (req, res) => {
     try {
         const { content } = req.body;
-        if (!content) return res.status(400).json({ message: 'Post content cannot be empty!' });
+        if (!content) return res.status(400).json({ message: 'Post content required' });
+        
         const newPost = new Post({ content });
         await newPost.save();
-        res.status(201).json({ message: 'Post created successfully!' });
+        res.status(201).json({ message: 'Post created successfully' });
     } catch (error) {
-        console.error('Error creating post:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        console.error('Post creation error:', error);
+        res.status(500).json({ message: 'Error creating post' });
     }
 });
 
-// Admin routes
-app.post('/api/admin/login', async (req, res) => {
-    const { username, password } = req.body;
-    
+app.post('/api/upload', upload.single('banner'), async (req, res) => {
     try {
+        const { username, password } = req.body;
         const admin = await Admin.findOne({ username });
-        if (!admin) {
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
+        
+        if (!admin || !(await bcrypt.compare(password, admin.password))) {
+            return res.status(401).json({ message: 'Unauthorized' });
         }
 
-        const validPassword = await bcrypt.compare(password, admin.password);
-        if (!validPassword) {
-            return res.status(401).json({ success: false, message: 'Invalid credentials' });
-        }
-
-        req.session.adminId = admin._id;
-        res.json({ success: true });
+        if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+        
+        const newBanner = new Banner({
+            imageUrl: `/uploads/${req.file.filename}`
+        });
+        await newBanner.save();
+        
+        res.json({ 
+            message: 'Banner updated successfully',
+            imageUrl: newBanner.imageUrl
+        });
     } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+        console.error('Upload error:', error);
+        res.status(500).json({ message: 'Upload failed' });
     }
 });
 
-app.get('/api/admin/check', authenticateAdmin, (req, res) => {
-    res.json({ authenticated: true });
-});
+// Static files should come after API routes
+app.use(express.static('public'));
 
-app.post('/api/admin/logout', (req, res) => {
-    req.session.destroy();
-    res.json({ success: true });
-});
-
-// Banner routes
+// Banner route
 app.get('/api/banner', async (req, res) => {
     try {
         const banner = await Banner.findOne().sort({ updatedAt: -1 });
@@ -191,98 +165,57 @@ app.get('/api/banner', async (req, res) => {
     }
 });
 
-app.post('/api/upload', 
-    authenticateAdmin,
-    upload.single('banner'),
-    async (req, res) => {
-        try {
-            if (!req.file) {
-                return res.status(400).json({ message: 'No file uploaded' });
-            }
-
-            const newBanner = new Banner({
-                imageUrl: `/uploads/${req.file.filename}`
-            });
-
-            await newBanner.save();
-            res.json({ 
-                message: 'Banner updated successfully',
-                imageUrl: newBanner.imageUrl
-            });
-        } catch (error) {
-            console.error('Upload error:', error);
-            res.status(500).json({ message: 'Error uploading banner' });
-        }
-    }
-);
-
 // Post interaction routes
 app.get('/api/posts', async (req, res) => {
     try {
         const posts = await Post.find().sort({ createdAt: -1 });
-        res.status(200).json(posts);
+        res.json(posts);
     } catch (error) {
         console.error('Error fetching posts:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
 app.post('/api/posts/:postId/like', async (req, res) => {
     try {
-        const { postId } = req.params;
         const post = await Post.findByIdAndUpdate(
-            postId,
+            req.params.postId,
             { $inc: { likes: 1 } },
             { new: true }
         );
         if (!post) return res.status(404).json({ message: 'Post not found' });
-        res.status(200).json({ likes: post.likes });
+        res.json({ likes: post.likes });
     } catch (error) {
-        console.error('Error liking post:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        console.error('Like error:', error);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
 app.post('/api/posts/:postId/comments', async (req, res) => {
     try {
-        const { postId } = req.params;
-        const { content } = req.body;
+        const post = await Post.findById(req.params.postId);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
         
-        if (!content) {
-            return res.status(400).json({ message: 'Comment cannot be empty!' });
-        }
-
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(404).json({ message: 'Post not found' });
-        }
-
-        post.comments.push({ content });
+        post.comments.push({ content: req.body.content });
         await post.save();
-
-        res.status(201).json({ message: 'Comment added successfully!' });
+        res.status(201).json({ message: 'Comment added' });
     } catch (error) {
-        console.error('Error adding comment:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        console.error('Comment error:', error);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
 app.get('/api/posts/:postId/comments', async (req, res) => {
     try {
-        const { postId } = req.params;
-        const post = await Post.findById(postId);
-        
-        if (!post) {
-            return res.status(404).json({ message: 'Post not found' });
-        }
-
-        res.status(200).json(post.comments);
+        const post = await Post.findById(req.params.postId);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+        res.json(post.comments);
     } catch (error) {
-        console.error('Error fetching comments:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        console.error('Comments error:', error);
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });

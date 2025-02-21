@@ -18,30 +18,28 @@
 <!-- admin.html -->
 <script>
     async function login() {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-
-    try {
-        const response = await fetch('/api/admin/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ username, password }),
-            credentials: 'include'
-        });
-
-        const result = await response.json();
-        if (result.success) {
-            window.location.href = "upload.html";
-        } else {
-            alert(result.message || 'Invalid credentials!');
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+    
+        try {
+            const response = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+    
+            const result = await response.json();
+            if (result.success) {
+                // Store credentials temporarily in localStorage
+                localStorage.setItem('tempCredentials', JSON.stringify({ username, password }));
+                window.location.href = "upload.html";
+            } else {
+                alert('Invalid credentials!');
+            }
+        } catch (error) {
+            alert('Login failed');
         }
-    } catch (error) {
-        console.error('Login error:', error);
-        alert('Login failed. Please try again.');
     }
-}
-</script>
+    </script>
 </body>
 </html>

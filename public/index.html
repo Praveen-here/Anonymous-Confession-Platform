@@ -18,7 +18,7 @@
 
     <!-- Banner Section -->
 <div class="banner-container">
-    <img id="bannerImage" class="banner-image" alt="Site Banner">
+    <img id="bannerImage" class="banner-image" alt="Site Banner" onerror="this.style.display='none'">
 </div>
 
     <!-- Sidebar -->
@@ -64,24 +64,29 @@
 
     <script src="finalscript.js"></script>
     <!-- In the loadBanner function -->
-<script>
-    async function loadBanner() {
-        try {
-            const response = await fetch('/api/banner');
-            const banner = await response.json();
-            const bannerImage = document.getElementById('bannerImage');
-            
-            if (banner.imageUrl) {
-                // Add cache busting parameter
-                bannerImage.src = banner.imageUrl + '?v=' + Date.now();
-            } else {
-                bannerImage.src = 'data:image/png;base64,...'; // default image
+    <script>
+        async function loadBanner() {
+            try {
+                const response = await fetch('/api/banner');
+                const banner = await response.json();
+                const bannerImage = document.getElementById('bannerImage');
+                
+                if (banner.imageUrl) {
+                    // Add cache busting parameter and ensure proper URL formatting
+                    const imageUrl = banner.imageUrl.startsWith('/') 
+                        ? banner.imageUrl 
+                        : `/${banner.imageUrl}`;
+                    bannerImage.src = imageUrl + '?v=' + Date.now();
+                    bannerImage.style.display = 'block';
+                } else {
+                    bannerImage.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading banner:', error);
+                document.getElementById('bannerImage').style.display = 'none';
             }
-        } catch (error) {
-            console.error('Error loading banner:', error);
         }
-    }
-    window.addEventListener('DOMContentLoaded', loadBanner);
-</script>
+        window.addEventListener('DOMContentLoaded', loadBanner);
+    </script>
 </body>
 </html>
