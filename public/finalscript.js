@@ -96,13 +96,14 @@ async function fetchPosts() {
         postsContainer.innerHTML = posts.map(post => `
             <div class="bg-white p-4 rounded-lg shadow-lg border border-black">
                 <div class="flex items-center mb-4">
-                    <div class="w-8 h-8 bg-black rounded-full mr-2"></div>
+                    <svg class="w-8 h-8 mr-2 text-gray-700" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 3C16.97 3 21 7.03 21 12C21 16.97 16.97 21 12 21C7.03 21 3 16.97 3 12C3 7.03 7.03 3 12 3ZM12 1C5.93 1 1 5.93 1 12C1 18.07 5.93 23 12 23C18.07 23 23 18.07 23 12C23 5.93 18.07 1 12 1ZM13 17V15H11V17H13ZM13 13V7H11V13H13Z"/>
+                    </svg>
                     <p class="font-bold">Anonymous</p>
                 </div>
                 <p>${post.content}</p>
                 <div class="flex items-center gap-2 mt-2">
                     <button class="like-btn flex items-center group" data-post-id="${post._id}" data-liked="false">
-                        <!-- Heart Icon (Outline) -->
                         <svg class="w-6 h-6 text-gray-600 group-data-[liked=true]:text-red-500" 
                              fill="none" 
                              stroke="currentColor" 
@@ -116,8 +117,6 @@ async function fetchPosts() {
                         </svg>
                         <span class="like-count ml-1 text-gray-600">${post.likes || 0}</span>
                     </button>
-                    
-                    <!-- Comment Button -->
                     <button class="flex items-center text-gray-600 hover:text-blue-500 ml-2" 
                             onclick="toggleCommentSection('${post._id}')">
                         <svg class="w-6 h-6" 
