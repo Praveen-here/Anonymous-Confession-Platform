@@ -66,26 +66,23 @@
     <!-- In the loadBanner function -->
     <script>
         async function loadBanner() {
-            try {
-                const response = await fetch('/api/banner');
-                const banner = await response.json();
-                const bannerImage = document.getElementById('bannerImage');
-                
-                if (banner.imageUrl) {
-                    // Add cache busting parameter and ensure proper URL formatting
-                    const imageUrl = banner.imageUrl.startsWith('/') 
-                        ? banner.imageUrl 
-                        : `/${banner.imageUrl}`;
-                    bannerImage.src = imageUrl + '?v=' + Date.now();
-                    bannerImage.style.display = 'block';
-                } else {
-                    bannerImage.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error loading banner:', error);
-                document.getElementById('bannerImage').style.display = 'none';
-            }
+    try {
+        const response = await fetch('/api/banner');
+        const banner = await response.json();
+        const bannerImage = document.getElementById('bannerImage');
+        
+        if (banner.imageUrl) {
+            // Remove local path logic
+            bannerImage.src = banner.imageUrl;
+            bannerImage.style.display = 'block';
+        } else {
+            bannerImage.style.display = 'none';
         }
+    } catch (error) {
+        console.error('Error loading banner:', error);
+        bannerImage.style.display = 'none';
+    }
+}
         window.addEventListener('DOMContentLoaded', loadBanner);
     </script>
 </body>

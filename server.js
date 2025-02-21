@@ -4,16 +4,22 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
-const fs = require('fs');
-const path = require('path');
+const cloudinary = require('cloudinary').v2; // Added Cloudinary
 const bcrypt = require("bcryptjs");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
 // Middleware Setup
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'https://res.cloudinary.com'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -72,20 +78,8 @@ async function initializeAdmin() {
     }
 }
 
-// Configure Multer
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadDir = path.join(__dirname, 'public/uploads');
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        cb(null, `banner-${Date.now()}${path.extname(file.originalname)}`);
-    }
-});
-
+// Configure Multer for memory storage
+const storage = multer.memoryStorage(); // Changed to memory storage
 const upload = multer({
     storage: storage,
     limits: { fileSize: 5 * 1024 * 1024 },
@@ -136,9 +130,19 @@ app.post('/api/upload', upload.single('banner'), async (req, res) => {
         }
 
         if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
-        
+
+        // Convert buffer to base64 string
+        const b64 = Buffer.from(req.file.buffer).toString("base64");
+        const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+
+        // Upload to Cloudinary
+        const result = await cloudinary.uploader.upload(dataURI, {
+            folder: "banners",
+            resource_type: "auto"
+        });
+
         const newBanner = new Banner({
-            imageUrl: `/uploads/${req.file.filename}`
+            imageUrl: result.secure_url
         });
         await newBanner.save();
         
@@ -152,7 +156,7 @@ app.post('/api/upload', upload.single('banner'), async (req, res) => {
     }
 });
 
-// Static files should come after API routes
+// Static files
 app.use(express.static('public'));
 
 // Banner route
