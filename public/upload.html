@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,17 +10,31 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-        <h1 class="text-xl font-bold mb-4 text-center">Upload Banner Image</h1>
-        <form id="uploadForm">
-            <input type="file" id="bannerImage" accept="image/*" class="mb-4" required>
-            <button type="submit" class="w-full bg-black text-white py-2 rounded">Upload Banner</button>
-        </form>
-    </div>
+    <!-- Replace the existing form with this -->
+<div class="bg-white p-6 rounded-lg shadow-lg w-96">
+    <!-- Banner Upload -->
+    <h1 class="text-xl font-bold mb-4 text-center">Upload Banner</h1>
+    <form id="uploadBannerForm" class="mb-8">
+        <input type="file" id="bannerImage" accept="image/*" class="mb-4" required>
+        <button type="submit" class="w-full bg-black text-white py-2 rounded">
+            Update Banner
+        </button>
+    </form>
 
-    <script>
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+    <!-- Background Upload -->
+    <h1 class="text-xl font-bold mb-4 text-center">Upload Background</h1>
+    <form id="uploadBackgroundForm">
+        <input type="file" id="backgroundImage" accept="image/*" class="mb-4" required>
+        <button type="submit" class="w-full bg-black text-white py-2 rounded">
+            Update Background
+        </button>
+    </form>
+</div>
+
+<script>
+    // Banner form handler
+    document.getElementById('uploadBannerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
             
             // Get credentials from localStorage
             const stored = localStorage.getItem('tempCredentials');
@@ -53,11 +68,42 @@
                 alert('Error uploading');
             }
         });
+
+        // New background form handler
+    document.getElementById('uploadBackgroundForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
         
-        // Clear credentials when leaving the page
-        window.addEventListener('beforeunload', () => {
-            localStorage.removeItem('tempCredentials');
-        });
-        </script>
+        const stored = localStorage.getItem('tempCredentials');
+        if (!stored) {
+            alert('Session expired');
+            window.location.href = 'admin.html';
+            return;
+        }
+        
+        const { username, password } = JSON.parse(stored);
+        
+        try {
+            const formData = new FormData();
+            formData.append('background', document.getElementById('backgroundImage').files[0]);
+            formData.append('username', username);
+            formData.append('password', password);
+
+            const response = await fetch('/api/upload/background', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                alert('Background updated!');
+                window.location.href = "/";
+            } else {
+                const error = await response.json();
+                alert(error.message || 'Upload failed');
+            }
+        } catch (error) {
+            alert('Error uploading background');
+        }
+    });
+</script>
 </body>
 </html>

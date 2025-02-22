@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
-const cloudinary = require('cloudinary').v2; // Added Cloudinary
+const cloudinary = require('cloudinary').v2;
 const bcrypt = require("bcryptjs");
 
 const app = express();
@@ -24,6 +24,20 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(bodyParser.json());
+
+// Configure Multer for memory storage
+const storage = multer.memoryStorage();
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed!'));
+        }
+    }
+});
 
 // MongoDB Connection
 const mongoURI = process.env.MONGODB_URI;
@@ -57,6 +71,14 @@ const bannerSchema = new mongoose.Schema({
 
 const Banner = mongoose.model('Banner', bannerSchema);
 
+const backgroundSchema = new mongoose.Schema({
+    imageUrl: { type: String, required: true },
+    public_id: { type: String, required: true },
+    updatedAt: { type: Date, default: Date.now }
+});
+
+const Background = mongoose.model('Background', backgroundSchema);
+
 const adminSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true }
@@ -78,20 +100,6 @@ async function initializeAdmin() {
     }
 }
 
-// Configure Multer for memory storage
-const storage = multer.memoryStorage(); // Changed to memory storage
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 5 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-        if (file.mimetype.startsWith('image/')) {
-            cb(null, true);
-        } else {
-            cb(new Error('Only image files are allowed!'));
-        }
-    }
-});
-
 // API Routes
 app.post('/api/admin/login', async (req, res) => {
     const { username, password } = req.body;
@@ -106,20 +114,6 @@ app.post('/api/admin/login', async (req, res) => {
     }
 });
 
-app.post('/api/posts', async (req, res) => {
-    try {
-        const { content } = req.body;
-        if (!content) return res.status(400).json({ message: 'Post content required' });
-        
-        const newPost = new Post({ content });
-        await newPost.save();
-        res.status(201).json({ message: 'Post created successfully' });
-    } catch (error) {
-        console.error('Post creation error:', error);
-        res.status(500).json({ message: 'Error creating post' });
-    }
-});
-
 app.post('/api/upload', upload.single('banner'), async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -131,11 +125,9 @@ app.post('/api/upload', upload.single('banner'), async (req, res) => {
 
         if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
-        // Convert buffer to base64 string
         const b64 = Buffer.from(req.file.buffer).toString("base64");
         const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
 
-        // Upload to Cloudinary
         const result = await cloudinary.uploader.upload(dataURI, {
             folder: "banners",
             resource_type: "auto"
@@ -156,6 +148,57 @@ app.post('/api/upload', upload.single('banner'), async (req, res) => {
     }
 });
 
+app.post('/api/upload/background', upload.single('background'), async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const admin = await Admin.findOne({ username });
+        
+        if (!admin || !(await bcrypt.compare(password, admin.password))) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+
+        const b64 = Buffer.from(req.file.buffer).toString("base64");
+        const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+
+        const result = await cloudinary.uploader.upload(dataURI, {
+            folder: "backgrounds",
+            resource_type: "auto"
+        });
+
+        const ratio = result.width / result.height;
+        if (Math.abs(ratio - (9/16)) > 0.01) {
+            await cloudinary.uploader.destroy(result.public_id);
+            return res.status(400).json({ message: 'Image must be 9:16 aspect ratio' });
+        }
+
+        // Handle previous background deletion safely
+        const prevBackground = await Background.findOne();
+        if (prevBackground) {
+            if (prevBackground.public_id) {
+                await cloudinary.uploader.destroy(prevBackground.public_id)
+                    .catch(err => console.error('Error deleting old background:', err));
+            }
+            await Background.deleteOne({ _id: prevBackground._id });
+        }
+
+        const newBackground = new Background({
+            imageUrl: result.secure_url,
+            public_id: result.public_id
+        });
+        await newBackground.save();
+        
+        res.json({ 
+            message: 'Background updated successfully',
+            imageUrl: newBackground.imageUrl
+        });
+    } catch (error) {
+        console.error('Upload error:', error);
+        res.status(500).json({ message: 'Upload failed' });
+    }
+});
+
 // Static files
 app.use(express.static('public'));
 
@@ -169,7 +212,30 @@ app.get('/api/banner', async (req, res) => {
     }
 });
 
-// Post interaction routes
+app.get('/api/background', async (req, res) => {
+    try {
+        const background = await Background.findOne();
+        res.json(background || { imageUrl: '' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching background' });
+    }
+});
+
+// Post routes
+app.post('/api/posts', async (req, res) => {
+    try {
+        const { content } = req.body;
+        if (!content) return res.status(400).json({ message: 'Post content required' });
+        
+        const newPost = new Post({ content });
+        await newPost.save();
+        res.status(201).json({ message: 'Post created successfully' });
+    } catch (error) {
+        console.error('Post creation error:', error);
+        res.status(500).json({ message: 'Error creating post' });
+    }
+});
+
 app.get('/api/posts', async (req, res) => {
     try {
         const posts = await Post.find().sort({ createdAt: -1 });
@@ -182,7 +248,7 @@ app.get('/api/posts', async (req, res) => {
 
 app.post('/api/posts/:postId/like', async (req, res) => {
     try {
-        const { liked } = req.body; // true = like, false = unlike
+        const { liked } = req.body;
         const increment = liked ? 1 : -1;
 
         const post = await Post.findByIdAndUpdate(
