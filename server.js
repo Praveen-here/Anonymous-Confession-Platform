@@ -19,7 +19,11 @@ cloudinary.config({
 
 // Middleware Setup
 app.use(cors({
-    origin: ['http://localhost:3000', 'https://res.cloudinary.com'],
+    origin: [
+        'http://localhost:3000',
+        'https://res.cloudinary.com',
+        'https://anonymous-posting-site.onrender.com' // Add your actual deployed domain here
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -133,18 +137,21 @@ app.post('/api/upload', upload.single('banner'), async (req, res) => {
             resource_type: "auto"
         });
 
-        const newBanner = new Banner({
-            imageUrl: result.secure_url
-        });
+        const newBanner = new Banner({ imageUrl: result.secure_url });
         await newBanner.save();
         
-        res.json({ 
+        // Send explicit success status
+        return res.status(200).json({ 
+            success: true,
             message: 'Banner updated successfully',
             imageUrl: newBanner.imageUrl
         });
     } catch (error) {
         console.error('Upload error:', error);
-        res.status(500).json({ message: 'Upload failed' });
+        return res.status(500).json({ 
+            success: false,
+            message: 'Upload failed' 
+        });
     }
 });
 
@@ -203,9 +210,11 @@ app.post('/api/upload/background', upload.single('background'), async (req, res)
 app.use(express.static('public'));
 
 // Banner route
+// Update both image endpoints
 app.get('/api/banner', async (req, res) => {
     try {
         const banner = await Banner.findOne().sort({ updatedAt: -1 });
+        res.set('Cache-Control', 'no-store, max-age=0');
         res.json(banner || { imageUrl: '' });
     } catch (error) {
         res.status(500).json({ message: 'Error fetching banner' });
@@ -215,6 +224,7 @@ app.get('/api/banner', async (req, res) => {
 app.get('/api/background', async (req, res) => {
     try {
         const background = await Background.findOne();
+        res.set('Cache-Control', 'no-store, max-age=0');
         res.json(background || { imageUrl: '' });
     } catch (error) {
         res.status(500).json({ message: 'Error fetching background' });

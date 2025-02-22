@@ -71,41 +71,56 @@
 
     <script src="finalscript.js"></script>
     <script>
+        // Unified image loader with force reload
+        function forceImageReload(imgElement, url) {
+            const timestamp = Date.now();
+            imgElement.src = `${url.split('?')[0]}?ts=${timestamp}`;
+        }
+    
         async function loadBanner() {
             try {
-                const response = await fetch('/api/banner');
-                const banner = await response.json();
                 const bannerImage = document.getElementById('bannerImage');
+                const response = await fetch(`/api/banner?ts=${Date.now()}`);
+                const banner = await response.json();
                 
                 if (banner.imageUrl) {
-                    bannerImage.src = banner.imageUrl;
+                    forceImageReload(bannerImage, banner.imageUrl);
                     bannerImage.style.display = 'block';
                 } else {
                     bannerImage.style.display = 'none';
                 }
             } catch (error) {
-                console.error('Error loading banner:', error);
+                console.error('Banner load error:', error);
                 bannerImage.style.display = 'none';
             }
         }
-        window.addEventListener('DOMContentLoaded', loadBanner);
-
-        async function loadBackground() {
-        try {
-            const response = await fetch('/api/background');
-            const background = await response.json();
-            const bgImage = document.getElementById('backgroundImage');
-            
-            if (background.imageUrl) {
-                bgImage.src = background.imageUrl;
-                bgImage.style.display = 'block';
-            }
-        } catch (error) {
-            console.error('Error loading background:', error);
-        }
-    }
-    window.addEventListener('DOMContentLoaded', loadBackground);
     
+        async function loadBackground() {
+            try {
+                const bgImage = document.getElementById('backgroundImage');
+                const response = await fetch(`/api/background?ts=${Date.now()}`);
+                const background = await response.json();
+                
+                if (background.imageUrl) {
+                    forceImageReload(bgImage, background.imageUrl);
+                    bgImage.style.display = 'block';
+                } else {
+                    bgImage.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Background load error:', error);
+            }
+        }
+    
+        // Initial loads
+        window.addEventListener('DOMContentLoaded', () => {
+            loadBanner();
+            loadBackground();
+        });
+    
+        // Update listeners
+        window.addEventListener('backgroundUpdated', loadBackground);
+        window.addEventListener('bannerUpdated', loadBanner);
     </script>
 </body>
 </html>

@@ -1,42 +1,34 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Banner Upload</title>
+    <title>Admin Upload</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">
-    <!-- Replace the existing form with this -->
-<div class="bg-white p-6 rounded-lg shadow-lg w-96">
-    <!-- Banner Upload -->
-    <h1 class="text-xl font-bold mb-4 text-center">Upload Banner</h1>
-    <form id="uploadBannerForm" class="mb-8">
-        <input type="file" id="bannerImage" accept="image/*" class="mb-4" required>
-        <button type="submit" class="w-full bg-black text-white py-2 rounded">
-            Update Banner
-        </button>
-    </form>
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+        <!-- Banner Upload -->
+        <h1 class="text-xl font-bold mb-4 text-center">Upload Banner</h1>
+        <form id="uploadBannerForm" class="mb-8">
+            <input type="file" id="bannerImage" accept="image/*" class="mb-4">
+            <button type="submit" class="w-full bg-black text-white py-2 rounded">
+                Update Banner
+            </button>
+        </form>
 
-    <!-- Background Upload -->
-    <h1 class="text-xl font-bold mb-4 text-center">Upload Background</h1>
-    <form id="uploadBackgroundForm">
-        <input type="file" id="backgroundImage" accept="image/*" class="mb-4" required>
-        <button type="submit" class="w-full bg-black text-white py-2 rounded">
-            Update Background
-        </button>
-    </form>
-</div>
+        <!-- Background Upload -->
+        <h1 class="text-xl font-bold mb-4 text-center">Upload Background</h1>
+        <form id="uploadBackgroundForm">
+            <input type="file" id="backgroundImage" accept="image/*" class="mb-4">
+            <button type="submit" class="w-full bg-black text-white py-2 rounded">
+                Update Background
+            </button>
+        </form>
+    </div>
 
-<script>
-    // Banner form handler
-    document.getElementById('uploadBannerForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-            
-            // Get credentials from localStorage
+    <script>
+        async function handleUpload(fieldName, inputId, endpoint) {
             const stored = localStorage.getItem('tempCredentials');
             if (!stored) {
                 alert('Session expired');
@@ -45,65 +37,61 @@
             }
             
             const { username, password } = JSON.parse(stored);
+            const fileInput = document.getElementById(inputId);
             
+            if (!fileInput.files.length) {
+                alert('Please select a file first');
+                return;
+            }
+
             try {
                 const formData = new FormData();
-                formData.append('banner', document.getElementById('bannerImage').files[0]);
+                formData.append(fieldName, fileInput.files[0]);
                 formData.append('username', username);
                 formData.append('password', password);
-        
-                const response = await fetch('/api/upload', {
+
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     body: formData
                 });
-        
+
+                const result = await response.json();
+                
                 if (response.ok) {
-                    alert('Banner updated!');
-                    localStorage.removeItem('tempCredentials');
+                    alert(result.message);
+                    // Refresh parent window before clearing input
+                    if (window.opener) {
+                        const message = fieldName === 'banner' ? 'bannerRefresh' : 'backgroundRefresh';
+                        window.opener.postMessage(message, '*');
+                    }
+                    // Redirect without clearing input (let navigation handle it)
                     window.location.href = "/";
                 } else {
-                    alert('Upload failed');
+                    throw new Error(result.message || 'Upload failed');
                 }
             } catch (error) {
-                alert('Error uploading');
+                alert(error.message || 'Network error: Please check your connection');
+                // Preserve selected file on error
+                fileInput.value = fileInput.value; // Reset without clearing
             }
+        }
+
+        // Form handlers with enhanced error prevention
+        function setupFormHandler(formId, handler) {
+            const form = document.getElementById(formId);
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                handler();
+            });
+        }
+
+        setupFormHandler('uploadBannerForm', () => {
+            handleUpload('banner', 'bannerImage', '/api/upload');
         });
 
-        // New background form handler
-    document.getElementById('uploadBackgroundForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const stored = localStorage.getItem('tempCredentials');
-        if (!stored) {
-            alert('Session expired');
-            window.location.href = 'admin.html';
-            return;
-        }
-        
-        const { username, password } = JSON.parse(stored);
-        
-        try {
-            const formData = new FormData();
-            formData.append('background', document.getElementById('backgroundImage').files[0]);
-            formData.append('username', username);
-            formData.append('password', password);
-
-            const response = await fetch('/api/upload/background', {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.ok) {
-                alert('Background updated!');
-                window.location.href = "/";
-            } else {
-                const error = await response.json();
-                alert(error.message || 'Upload failed');
-            }
-        } catch (error) {
-            alert('Error uploading background');
-        }
-    });
-</script>
+        setupFormHandler('uploadBackgroundForm', () => {
+            handleUpload('background', 'backgroundImage', '/api/upload/background');
+        });
+    </script>
 </body>
 </html>

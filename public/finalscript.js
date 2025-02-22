@@ -248,4 +248,22 @@ async function fetchComments(postId) {
     } catch (error) {
         console.error('Error fetching comments:', error);
     }
-}
+}   
+
+// Update message handler
+window.addEventListener('message', (event) => {
+    if (event.data === 'backgroundRefresh') {
+        window.dispatchEvent(new Event('backgroundUpdated'));
+        const bgImage = document.getElementById('backgroundImage');
+        if (bgImage) {
+            bgImage.src = bgImage.src.split('?')[0] + `?ts=${Date.now()}`;
+        }
+    }
+    if (event.data === 'bannerRefresh') {
+        window.dispatchEvent(new Event('bannerUpdated'));
+        const bannerImage = document.getElementById('bannerImage');
+        if (bannerImage) {
+            bannerImage.src = bannerImage.src.split('?')[0] + `?ts=${Date.now()}`;
+        }
+    }
+});
