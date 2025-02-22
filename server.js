@@ -182,11 +182,15 @@ app.get('/api/posts', async (req, res) => {
 
 app.post('/api/posts/:postId/like', async (req, res) => {
     try {
+        const { liked } = req.body; // true = like, false = unlike
+        const increment = liked ? 1 : -1;
+
         const post = await Post.findByIdAndUpdate(
             req.params.postId,
-            { $inc: { likes: 1 } },
+            { $inc: { likes: increment } },
             { new: true }
         );
+        
         if (!post) return res.status(404).json({ message: 'Post not found' });
         res.json({ likes: post.likes });
     } catch (error) {

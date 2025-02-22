@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", function () {
     const menuButton = document.getElementById("menuButton");
     const sidebar = document.getElementById("sidebar");
@@ -161,24 +162,28 @@ async function handleLike(event) {
     const isLiked = button.dataset.liked === 'true';
     
     try {
-        const response = await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
+        const response = await fetch(`/api/posts/${postId}/like`, { 
+            method: 'POST',
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ liked: !isLiked })
+        });
         const result = await response.json();
         
-        if (!response.ok) throw new Error(result.message || 'Failed to like post');
+        if (!response.ok) throw new Error(result.message || 'Failed to toggle like');
         
         // Update UI
         const svg = button.querySelector('svg');
         const countElement = button.querySelector('.like-count');
         
         if (isLiked) {
-            // Switch to outline
+            // Switch to outline (dislike)
             svg.innerHTML = `<path stroke-linecap="round" 
                                   stroke-linejoin="round" 
                                   stroke-width="2" 
                                   d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>`;
             button.dataset.liked = 'false';
         } else {
-            // Switch to solid
+            // Switch to solid (like)
             svg.innerHTML = `<path stroke-linecap="round" 
                                   stroke-linejoin="round" 
                                   stroke-width="2" 
@@ -191,8 +196,8 @@ async function handleLike(event) {
         countElement.textContent = result.likes;
         
     } catch (error) {
-        console.error('Error liking post:', error);
-        alert('Failed to like post. Please try again.');
+        console.error('Error toggling like:', error);
+        alert('Failed to toggle like. Please try again.');
     }
 }   
 
@@ -223,7 +228,7 @@ async function submitComment(postId) {
 
         commentInput.value = '';
         fetchComments(postId); // Refresh comments after submitting
-    } catch (error) {
+    } catch (error) {   
         console.error('Error submitting comment:', error);
     }
 }
