@@ -155,6 +155,7 @@ app.post('/api/upload', upload.single('banner'), async (req, res) => {
     }
 });
 
+// Update the background upload endpoint
 app.post('/api/upload/background', upload.single('background'), async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -180,16 +181,7 @@ app.post('/api/upload/background', upload.single('background'), async (req, res)
             return res.status(400).json({ message: 'Image must be 9:16 aspect ratio' });
         }
 
-        // Handle previous background deletion safely
-        const prevBackground = await Background.findOne();
-        if (prevBackground) {
-            if (prevBackground.public_id) {
-                await cloudinary.uploader.destroy(prevBackground.public_id)
-                    .catch(err => console.error('Error deleting old background:', err));
-            }
-            await Background.deleteOne({ _id: prevBackground._id });
-        }
-
+        // Create new entry without deleting old ones (like banners)
         const newBackground = new Background({
             imageUrl: result.secure_url,
             public_id: result.public_id
@@ -221,9 +213,10 @@ app.get('/api/banner', async (req, res) => {
     }
 });
 
+// Update background fetch endpoint to match banner behavior
 app.get('/api/background', async (req, res) => {
     try {
-        const background = await Background.findOne();
+        const background = await Background.findOne().sort({ updatedAt: -1 });
         res.set('Cache-Control', 'no-store, max-age=0');
         res.json(background || { imageUrl: '' });
     } catch (error) {
