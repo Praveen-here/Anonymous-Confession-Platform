@@ -1,13 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>BCU Confession Site</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
-    <link rel="stylesheet" href="finalstyle.css"/>
-</head>
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>BCU Confession Site</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+        <link rel="stylesheet" href="finalstyle.css"/>
+        <script>
+            tailwind.config = {
+                theme: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        </script>
+    </head>
+    <body class="bg-white text-black"> <!-- removed font-sans as it's now default -->
 <body class="bg-white text-black font-sans">
 
     <!-- Add this right after opening body tag -->
@@ -24,9 +35,17 @@
     </div>
 
     <!-- Banner Section -->
-    <div class="banner-container">
-        <img id="bannerImage" class="banner-image" alt="Site Banner" onerror="this.style.display='none'">
+<!-- Updated Banner Section -->
+<div class="pt-4">
+    <div class="max-w-[800px] md:max-w-[1400px] mx-auto px-4">
+        <div class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+            <img id="bannerImage" 
+                 class="w-full h-48 md:h-[400px] object-cover object-center" 
+                 alt="Site Banner" 
+                 onerror="this.style.display='none'">
+        </div>
     </div>
+</div>
 
     <!-- Sidebar -->
     <div class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" id="sidebar">
@@ -46,9 +65,9 @@
     </div>
 
     <!-- Main Content -->
-    <div class="p-4 space-y-4" id="postsContainer">
-        <!-- Posts and comments will be dynamically loaded here -->
-    </div>
+<div class="p-4 space-y-6" id="postsContainer">  <!-- Changed from space-y-4 to space-y-6 -->
+    <!-- Posts and comments will be dynamically loaded here -->
+</div>
 
     <!-- Floating Action Button -->
     <div class="fixed bottom-4 right-4">
@@ -101,7 +120,7 @@
                 const response = await fetch(`/api/background?ts=${Date.now()}`);
                 const background = await response.json();
                 
-                if (background.imageUrl) {
+                if (background.imageUrl) {  
                     forceImageReload(bgImage, background.imageUrl);
                     bgImage.style.display = 'block';
                 } else {

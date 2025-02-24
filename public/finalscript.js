@@ -94,16 +94,17 @@ async function fetchPosts() {
         const posts = await response.json();
         const postsContainer = document.getElementById('postsContainer');
         
-        postsContainer.innerHTML = posts.map(post => `
-            <div class="bg-white p-4 rounded-lg shadow-lg border border-black">
-                <div class="flex items-center mb-4">
-                    <svg class="w-8 h-8 mr-2 text-gray-700" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 3C16.97 3 21 7.03 21 12C21 16.97 16.97 21 12 21C7.03 21 3 16.97 3 12C3 7.03 7.03 3 12 3ZM12 1C5.93 1 1 5.93 1 12C1 18.07 5.93 23 12 23C18.07 23 23 18.07 23 12C23 5.93 18.07 1 12 1ZM13 17V15H11V17H13ZM13 13V7H11V13H13Z"/>
-                    </svg>
-                    <p class="font-bold">Anonymous</p>
-                </div>
-                <p>${post.content}</p>
-                <div class="flex items-center gap-2 mt-2">
+        // Update the post template in fetchPosts()
+postsContainer.innerHTML = posts.map(post => `
+    <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 mb-4">
+        <div class="flex items-center mb-4">
+            <svg class="w-8 h-8 mr-2 text-gray-700" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 3C16.97 3 21 7.03 21 12C21 16.97 16.97 21 12 21C7.03 21 3 16.97 3 12C3 7.03 7.03 3 12 3ZM12 1C5.93 1 1 5.93 1 12C1 18.07 5.93 23 12 23C18.07 23 23 18.07 23 12C23 5.93 18.07 1 12 1ZM13 17V15H11V17H13ZM13 13V7H11V13H13Z"/>
+            </svg>
+            <p class="font-bold text-gray-800">Anonymous</p>
+        </div>
+        <p class="text-gray-700 leading-relaxed">${post.content}</p>
+        <div class="flex items-center gap-2 mt-4">
                     <button class="like-btn flex items-center group" data-post-id="${post._id}" data-liked="false">
                         <svg class="w-6 h-6 text-gray-600 group-data-[liked=true]:text-red-500" 
                              fill="none" 
