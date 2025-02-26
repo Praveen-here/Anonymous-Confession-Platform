@@ -164,20 +164,22 @@ async function fetchPosts() {
                         <span class="like-count ml-1 text-gray-600">${post.likes || 0}</span>
                     </button>
                     <button class="flex items-center text-gray-600 hover:text-blue-500 ml-2" 
-                            onclick="toggleCommentSection('${post._id}')">
-                        <svg class="w-6 h-6" 
-                             fill="none" 
-                             stroke="currentColor" 
-                             viewBox="0 0 24 24" 
-                             xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" 
-                                  stroke-linejoin="round" 
-                                  stroke-width="2" 
-                                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
-                            </path>
-                        </svg>
-                        <span class="comment-count ml-1 text-gray-600">${post.comments?.length || 0}</span>
-                    </button>
+            onclick="toggleCommentSection('${post._id}')">
+        <svg class="w-6 h-6" 
+             fill="none" 
+             stroke="currentColor" 
+             viewBox="0 0 24 24" 
+             xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" 
+                  stroke-linejoin="round" 
+                  stroke-width="2" 
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
+            </path>
+        </svg>
+        <span id="commentCount-${post._id}" class="comment-count ml-1 text-gray-600">
+            ${post.comments?.length || 0}
+        </span>
+    </button>
                 </div>
                 <div id="commentSection-${post._id}" class="hidden">
                     <input type="text" id="commentInput-${post._id}" 
@@ -273,7 +275,13 @@ async function submitComment(postId) {
         if (!response.ok) throw new Error(result.message || 'Failed to add comment');
 
         commentInput.value = '';
-        fetchComments(postId); // Refresh comments after submitting
+        
+        // Update comment count and comments list
+        const comments = await fetchComments(postId);
+        const commentCount = document.getElementById(`commentCount-${postId}`);
+        if (commentCount) {
+            commentCount.textContent = comments.length;
+        }
     } catch (error) {   
         console.error('Error submitting comment:', error);
     }
@@ -287,12 +295,16 @@ async function fetchComments(postId) {
         const comments = await response.json();
         const commentsContainer = document.getElementById(`commentsContainer-${postId}`);
         
-        // Added 🗨 symbol before each comment
+        // Update comments list
         commentsContainer.innerHTML = comments.map(comment => 
             `<p class="text-gray-600 mt-2">🗨 ${comment.content}</p>`
         ).join('');
+
+        return comments; // Return comments array for count update
+        
     } catch (error) {
         console.error('Error fetching comments:', error);
+        return [];
     }
 }   
 
