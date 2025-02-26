@@ -148,7 +148,7 @@ async function fetchPosts() {
                              alt="Post image"/>
                     </div>
                 ` : ''}
-        <div class="flex items-center gap-2 mt-4">
+                <div class="flex items-center gap-2 mt-4">
                     <button class="like-btn flex items-center group" data-post-id="${post._id}" data-liked="false">
                         <svg class="w-6 h-6 text-gray-600 group-data-[liked=true]:text-red-500" 
                              fill="none" 
@@ -176,6 +176,7 @@ async function fetchPosts() {
                                   d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z">
                             </path>
                         </svg>
+                        <span class="comment-count ml-1 text-gray-600">${post.comments?.length || 0}</span>
                     </button>
                 </div>
                 <div id="commentSection-${post._id}" class="hidden">

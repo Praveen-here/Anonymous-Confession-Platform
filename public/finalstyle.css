@@ -144,3 +144,10 @@ button:hover, .btn:hover {
 #imagePreview:hover img {
     transform: scale(1.02);
 }
+
+/* Add comment count styling */
+.comment-count {
+    margin-left: 4px;
+    font-size: 0.9rem;
+    color: #666;
+}
