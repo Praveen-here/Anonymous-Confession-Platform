@@ -135,3 +135,12 @@ button:hover, .btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
 }
+
+/* Add image preview styling */
+#imagePreview img {
+    transition: transform 0.3s ease;
+}
+
+#imagePreview:hover img {
+    transform: scale(1.02);
+}

@@ -77,16 +77,23 @@
     </div>
 
     <!-- Create Post -->
-    <div class="fixed inset-0 bg-white z-50 hidden" id="createPost">
-        <div class="flex items-center justify-between p-4 border-b border-gray-300">
-            <i class="fas fa-arrow-left text-2xl cursor-pointer" id="createPostBackButton"></i>
-            <h1 class="text-xl font-bold">Create</h1>
-            <button class="border border-black px-4 py-2 rounded-lg" id="submitPostButton">Post</button>
-        </div>
-        <div class="p-4">
-            <textarea class="w-full h-32 p-2 border border-gray-300 rounded-lg" placeholder="Share what's on your mind" id="postContent"></textarea>
-        </div>
+    <!-- Update Create Post Section -->
+<div class="fixed inset-0 bg-white z-50 hidden" id="createPost">
+    <div class="flex items-center justify-between p-4 border-b border-gray-300">
+        <i class="fas fa-arrow-left text-2xl cursor-pointer" id="createPostBackButton"></i>
+        <h1 class="text-xl font-bold">Create</h1>
+        <button class="border border-black px-4 py-2 rounded-lg" id="submitPostButton">Post</button>
     </div>
+    <div class="p-4">
+        <textarea class="w-full h-32 p-2 border border-gray-300 rounded-lg mb-2" 
+                  placeholder="Add a caption..." id="postContent"></textarea>
+        <input type="file" id="imageInput" accept="image/*" class="hidden" />
+        <button id="imageUploadButton" class="text-gray-600 p-2 rounded-lg border border-gray-300">
+            <i class="fas fa-image mr-2"></i>Add Image
+        </button>
+        <div id="imagePreview" class="mt-4"></div>
+    </div>
+</div>
 
     <script src="finalscript.js"></script>
     <script>

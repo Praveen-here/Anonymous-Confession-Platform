@@ -57,6 +57,8 @@ mongoose.connect(mongoURI, {
 
 // Schemas
 const postSchema = new mongoose.Schema({
+    content: { type: String, required: false },
+    imageUrl: { type: String, required: false },    
     content: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
     comments: [{
@@ -115,6 +117,25 @@ app.post('/api/admin/login', async (req, res) => {
         res.json({ success: valid });
     } catch (error) {
         res.status(500).json({ success: false });
+    }
+});
+
+app.post('/api/upload/post', upload.single('image'), async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ message: 'No image uploaded' });
+
+        const b64 = Buffer.from(req.file.buffer).toString("base64");
+        const dataURI = "data:" + req.file.mimetype + ";base64," + b64;
+
+        const result = await cloudinary.uploader.upload(dataURI, {
+            folder: "posts",
+            resource_type: "auto"
+        });
+
+        res.json({ imageUrl: result.secure_url });
+    } catch (error) {
+        console.error('Image upload error:', error);
+        res.status(500).json({ message: 'Image upload failed' });
     }
 });
 
@@ -224,13 +245,13 @@ app.get('/api/background', async (req, res) => {
     }
 });
 
-// Post routes
+// Update post creation endpoint
 app.post('/api/posts', async (req, res) => {
     try {
-        const { content } = req.body;
-        if (!content) return res.status(400).json({ message: 'Post content required' });
+        const { content, imageUrl } = req.body;
+        if (!content && !imageUrl) return res.status(400).json({ message: 'Post requires text or image' });
         
-        const newPost = new Post({ content });
+        const newPost = new Post({ content, imageUrl });
         await newPost.save();
         res.status(201).json({ message: 'Post created successfully' });
     } catch (error) {
