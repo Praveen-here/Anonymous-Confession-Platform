@@ -1,4 +1,21 @@
 
+// Splash Screen Handling
+document.addEventListener('DOMContentLoaded', () => {
+    const splashScreen = document.getElementById('splashScreen');
+    
+    // Hide splash screen when everything is loaded
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            splashScreen.classList.add('hidden');
+        }, 1500); // Minimum display time
+    });
+
+    // Fallback in case load event doesn't fire
+    setTimeout(() => {
+        splashScreen.classList.add('hidden');
+    }, 4000); // Maximum display time even if page isn't fully loaded
+});
+
 document.addEventListener("DOMContentLoaded", function () {
     const menuButton = document.getElementById("menuButton");
     const sidebar = document.getElementById("sidebar");

@@ -20,6 +20,20 @@
     </head>
     <body class="bg-white text-black"> <!-- removed font-sans as it's now default -->
 <body class="bg-white text-black font-sans">
+    <!-- Splash Screen -->
+    <div id="splashScreen" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="animate-bounce mb-4">
+            <svg class="w-20 h-20 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M19 13l-7 7-7-7m14-8l-7 7-7-7"/>
+            </svg>
+        </div>
+        <div class="flex items-center space-x-2">
+            <div class="w-3 h-3 bg-black rounded-full animate-pulse"></div>
+            <div class="w-3 h-3 bg-black rounded-full animate-pulse delay-100"></div>
+            <div class="w-3 h-3 bg-black rounded-full animate-pulse delay-200"></div>
+        </div>
+    </div>
 
     <!-- Add this right after opening body tag -->
 <div class="fixed inset-0 -z-50">
