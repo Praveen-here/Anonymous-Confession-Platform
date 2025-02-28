@@ -109,12 +109,31 @@
     </div>
 </div>
 
+<!-- Add image viewer modal -->
+<div id="imageModal" class="fixed inset-0 bg-black bg-opacity-90 hidden z-50 flex items-center justify-center p-4">
+    <div class="relative w-full h-full">
+        <img id="modalImage" class="w-full h-full object-contain" alt="Full size image">
+        <button onclick="document.getElementById('imageModal').classList.add('hidden')" 
+                class="absolute top-4 right-4 text-white text-2xl bg-black rounded-full w-8 h-8">
+            ×
+        </button>
+    </div>
+</div>
+
     <script src="finalscript.js"></script>
     <script>
         // Unified image loader with force reload
         function forceImageReload(imgElement, url) {
             const timestamp = Date.now();
             imgElement.src = `${url.split('?')[0]}?ts=${timestamp}`;
+        }
+
+        // Image click handler
+        function showImageModal(imageUrl) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            modalImage.src = imageUrl;
+            modal.classList.remove('hidden');
         }
     
         async function loadBanner() {

@@ -6,6 +6,7 @@ const cors = require('cors');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const bcrypt = require("bcryptjs");
+const session = require('express-session');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -17,17 +18,27 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Middleware Setup
+// Enhanced CORS configuration
 app.use(cors({
-    origin: [
-        'http://localhost:3000',
-        'https://res.cloudinary.com',
-        'https://anonymous-posting-site.onrender.com' // Add your actual deployed domain here
-    ],
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
 }));
+
+// Session configuration
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+}));
+
 app.use(bodyParser.json());
+app.use(express.static('public'));
 
 // Configure Multer for memory storage
 const storage = multer.memoryStorage();
@@ -106,7 +117,7 @@ async function initializeAdmin() {
     }
 }
 
-// API Routes
+// Enhanced Admin Login Endpoint
 app.post('/api/admin/login', async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -114,11 +125,21 @@ app.post('/api/admin/login', async (req, res) => {
         if (!admin) return res.status(401).json({ success: false });
         
         const valid = await bcrypt.compare(password, admin.password);
-        res.json({ success: valid });
+        if (valid) {
+            req.session.admin = { id: admin._id, username: admin.username };
+            return res.json({ success: true });
+        }
+        res.json({ success: false });
     } catch (error) {
         res.status(500).json({ success: false });
     }
 });
+
+// Protected middleware
+const isAdmin = (req, res, next) => {
+    if (req.session.admin) return next();
+    res.status(401).json({ message: 'Unauthorized' });
+};
 
 app.post('/api/upload/post', upload.single('image'), async (req, res) => {
     try {
@@ -139,7 +160,8 @@ app.post('/api/upload/post', upload.single('image'), async (req, res) => {
     }
 });
 
-app.post('/api/upload', upload.single('banner'), async (req, res) => {
+// Updated Upload Endpoints
+app.post('/api/upload', upload.single('banner'), isAdmin, async (req, res) => {
     try {
         const { username, password } = req.body;
         const admin = await Admin.findOne({ username });
@@ -177,7 +199,7 @@ app.post('/api/upload', upload.single('banner'), async (req, res) => {
 });
 
 // Update the background upload endpoint
-app.post('/api/upload/background', upload.single('background'), async (req, res) => {
+app.post('/api/upload/background', upload.single('background'), isAdmin, async (req, res) => {
     try {
         const { username, password } = req.body;
         const admin = await Admin.findOne({ username });
