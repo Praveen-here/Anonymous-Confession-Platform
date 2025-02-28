@@ -18,23 +18,25 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Enhanced CORS configuration
-// Update CORS config
-app.use(cors({
-    origin: true, // Reflect request origin
-    credentials: true // Allow credentials
-}));
-
-// Update session config
+// Update session configuration
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     cookie: { 
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'none', // Add this
+        secure: true,        // Must be true for HTTPS
+        sameSite: 'none',     // Required for cross-site cookies
+        httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000 
     }
+}));
+
+// Update CORS configuration
+app.use(cors({
+    origin: true,            // Reflect request origin
+    credentials: true,       // Allow credentials
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(bodyParser.json());
