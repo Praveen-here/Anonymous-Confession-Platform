@@ -178,3 +178,20 @@ button:hover, .btn:hover {
     opacity: 0;
     pointer-events: none;
 }
+
+#imageModal {
+    background: rgba(0, 0, 0, 0.95) !important;
+    backdrop-filter: blur(10px);
+}
+
+#modalImage {
+    transition: transform 0.3s ease;
+    padding: 20px;
+}
+
+#imageModal button {
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    padding: 5px 10px;
+}
