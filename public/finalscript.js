@@ -1,4 +1,3 @@
-
 // Splash Screen Handling
 document.addEventListener('DOMContentLoaded', () => {
     const splashScreen = document.getElementById('splashScreen');
@@ -147,7 +146,7 @@ async function fetchPosts() {
         const posts = await response.json();
         const postsContainer = document.getElementById('postsContainer');
         
-        // Updated post template with fixed image handling
+        // Update the post template in fetchPosts()
         postsContainer.innerHTML = posts.map(post => `
             <div class="bg-white p-6 rounded-2xl shadow-md border border-gray-200 mb-4">
                 <div class="flex items-center mb-4">
@@ -160,9 +159,8 @@ async function fetchPosts() {
                 ${post.imageUrl ? `
                     <div class="relative overflow-hidden rounded-lg" style="padding-top: 56.25%">
                         <img src="${post.imageUrl}" 
-                             class="absolute top-0 left-0 w-full h-full object-contain cursor-pointer" 
-                             onclick="handleImageClick('${post.imageUrl}')"
-                             style="max-width: 100%; max-height: 80vh; margin: auto;"
+                             class="absolute top-0 left-0 w-full h-full object-cover cursor-pointer" 
+                             onclick="window.open('${post.imageUrl}', '_blank')"
                              alt="Post image"/>
                     </div>
                 ` : ''}
@@ -220,15 +218,6 @@ async function fetchPosts() {
         console.error('Error fetching posts:', error);
         alert('Failed to load posts. Please try again later.');
     }
-}
-
-// Image modal handling function
-function handleImageClick(url) {
-    const modal = document.getElementById('imageModal');
-    const modalImage = document.getElementById('modalImage');
-    modalImage.style.objectFit = 'contain';
-    modalImage.src = url;
-    modal.classList.remove('hidden');
 }
 
 async function handleLike(event) {
