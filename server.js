@@ -343,14 +343,15 @@ app.get('/api/posts/:postId/comments', async (req, res) => {
 // Add to server.js before listening
 // Get active discussion hall
 // Update active halls endpoint
+// Change active halls endpoint to return multiple halls
 app.get('/api/discussion-halls/active', async (req, res) => {
     try {
-        const hall = await DiscussionHall.findOne({ 
+        const halls = await DiscussionHall.find({ 
             status: 'active',
             expiresAt: { $gt: new Date() }
         }).sort({ createdAt: -1 });
         
-        res.json(hall || null);
+        res.json(halls);
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
@@ -475,7 +476,7 @@ io.on('connection', (socket) => {
 // Add this cleanup job (once, at server start)
 setInterval(async () => {
     try {
-        // Only expire halls that are past their expiration time
+        // Expire old halls but keep them in database
         await DiscussionHall.updateMany(
             { 
                 status: 'active',
@@ -486,7 +487,7 @@ setInterval(async () => {
     } catch (error) {
         console.error('Cleanup error:', error);
     }
-}, 3600000); // Run every hour
+}, 3600000);
 
 // Change app.listen to httpServer.listen
 httpServer.listen(PORT, () => {
