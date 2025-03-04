@@ -63,10 +63,12 @@
 
     <!-- Sidebar -->
     <div class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" id="sidebar">
-        <div class="bg-white w-64 h-full p-4">
-            <h2 class="text-xl font-bold mb-4 cursor-pointer" id="aboutButton">About</h2>
-            <h2 class="text-xl font-bold cursor-pointer" onclick="window.location.href='admin.html'">Admin Login</h2>
-        </div>
+        <!-- Update the sidebar div -->
+<div class="bg-white w-64 h-full p-4 space-y-4"> <!-- Changed from space-y-4 -->
+    <h2 class="text-xl font-bold cursor-pointer" id="aboutButton">About</h2>
+    <h2 class="text-xl font-bold cursor-pointer" onclick="window.location.href='admin.html'">Admin Login</h2>
+    <h2 class="text-xl font-bold cursor-pointer" id="discussionHallButton">Discussion Hall</h2>
+</div>
     </div>
 
     <!-- About Section -->

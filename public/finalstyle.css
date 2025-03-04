@@ -176,3 +176,30 @@ button:hover, .btn:hover {
     opacity: 0;
     pointer-events: none;
 }
+
+/* Ensure proper message container sizing */
+.chat-container {
+    height: calc(100vh - 160px);
+    overflow-anchor: none;
+}
+
+/* Mobile-friendly input */
+#messageInput {
+    min-height: 40px;
+    padding: 8px 16px;
+}
+
+/* Prevent message overflow */
+[class^="max-w-"] {
+    max-width: calc(100% - 4rem);
+}
+
+/* Add consistent spacing */
+#sidebar h2 {
+    margin-bottom: 1rem; /* 16px gap between items */
+}
+
+/* Remove extra margin from last item */
+#sidebar h2:last-child {
+    margin-bottom: 0;
+}

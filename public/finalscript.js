@@ -139,6 +139,22 @@ document.getElementById('imageInput').addEventListener('change', async (e) => {
     fetchPosts();
 });
 
+document.getElementById('discussionHallButton').addEventListener('click', async () => {
+    try {
+        const response = await fetch('/api/discussion-halls/active');
+        const activeHall = await response.json();
+        
+        if (activeHall && activeHall._id) {
+            window.location.href = `chat.html?hall=${activeHall._id}`;
+        } else {
+            alert('No active discussion hall available');
+        }
+    } catch (error) {
+        console.error('Error checking discussion halls:', error);
+        alert('Failed to check discussion halls');
+    }
+});
+
 async function fetchPosts() {
     try {
         const response = await fetch('/api/posts');

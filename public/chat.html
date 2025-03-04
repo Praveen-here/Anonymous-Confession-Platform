@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discussion Hall</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: calc(100vh - 160px);
+        }
+        @media (min-width: 640px) {
+            .chat-container {
+                height: calc(100vh - 160px);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="max-w-2xl mx-auto bg-white h-screen flex flex-col">
+        <!-- Header -->
+        <div class="p-4 border-b border-gray-200 flex items-center">
+            <button onclick="window.history.back()" class="mr-4">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div>
+                <h1 id="hallTopic" class="font-bold"></h1>
+                <p id="hallTimer" class="text-sm text-gray-500"></p>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-container overflow-y-auto p-4 space-y-4 flex-1" id="messagesContainer">
+            <!-- Messages will be loaded here -->
+        </div>
+
+        <!-- Message Input -->
+        <div class="p-4 border-t border-gray-200">
+            <div class="flex items-center space-x-2">
+                <input type="text" id="messageInput" 
+                       class="flex-1 p-2 border border-gray-300 rounded-full focus:outline-none"
+                       placeholder="Type a message...">
+                <button id="sendButton" class="bg-black text-white w-10 h-10 rounded-full flex items-center justify-center">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const urlParams = new URLSearchParams(window.location.search);
+        const hallId = urlParams.get('hall');
+        let userNumber = localStorage.getItem(`userNumber-${hallId}`);
+    
+        // Initialize user number if not exists
+        if (!userNumber) {
+            userNumber = `User${Math.floor(1000 + Math.random() * 9000)}`;
+            localStorage.setItem(`userNumber-${hallId}`, userNumber);
+        }
+    
+        // Socket.io connection handler
+        socket.on('connect', () => {
+            console.log('Connected to WebSocket server');
+            socket.emit('join-hall', hallId);
+        });
+    
+        // Message sending handler
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+            
+            if (!content) return;
+    
+            try {
+                socket.emit('chat-message', {
+                    hallId,
+                    userNumber,
+                    content
+                });
+                input.value = '';
+                input.focus();
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
+        }
+    
+        // Handle incoming messages
+        socket.on('new-message', (message) => {
+            appendMessage(message);
+        });
+    
+        // Message display function
+        function appendMessage(message) {
+            const isCurrentUser = message.userNumber === userNumber;
+    // Add message timestamp
+    const timestamp = new Date(message.createdAt).toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `flex ${isCurrentUser ? 'justify-end' : 'justify-start'} items-start gap-2 mb-4`;
+    
+    messageDiv.innerHTML = `
+        ${!isCurrentUser ? `
+        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium">
+            ${message.userNumber.replace('User', '')}
+        </div>` : ''}
+        
+        <div class="max-w-[75%] bg-${isCurrentUser ? 'black text-white' : 'gray-100'} p-3 rounded-2xl break-words">
+            <p class="text-sm">${message.content}</p>
+            <p class="text-xs mt-1 ${isCurrentUser ? 'text-gray-300' : 'text-gray-500'}">
+                ${timestamp}
+            </p>
+        </div>
+
+        ${isCurrentUser ? `
+        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium">
+            ${message.userNumber.replace('User', '')}
+        </div>` : ''}
+    `;
+
+    messagesContainer.appendChild(messageDiv);
+}
+    
+        // Load initial messages and hall info
+        // Update the DOMContentLoaded handler
+        window.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Validate hall ID first
+        const hallId = urlParams.get('hall');
+        if (!hallId || !/^[0-9a-fA-F]{24}$/.test(hallId)) {
+            alert('Invalid discussion hall');
+            window.location.href = '/';
+            return;
+        }
+
+        // Load hall info
+        const hallResponse = await fetch(`/api/discussion-halls/${hallId}`);
+        if (!hallResponse.ok) {
+            alert('Discussion hall not found or expired');
+            window.location.href = '/';
+            return;
+        }
+        
+        const hall = await hallResponse.json();
+        
+        // Update UI
+        document.getElementById('hallTopic').textContent = hall.topic;
+        const expiresAt = new Date(hall.expiresAt);
+        document.getElementById('hallTimer').textContent = 
+            `Open until ${expiresAt.toLocaleString()}`;
+
+        // Load messages
+        const messagesResponse = await fetch(`/api/chat-messages/${hallId}`);
+        const messages = await messagesResponse.json();
+        messages.forEach(appendMessage);
+        
+        // Scroll to bottom
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+    } catch (error) {
+        console.error('Initialization error:', error);
+        alert('Failed to load discussion hall');
+    }
+});
+    
+        // Handle connection errors
+        socket.on('connect_error', (error) => {
+            console.error('WebSocket connection error:', error);
+            alert('Connection to chat server failed. Please refresh the page.');
+        });
+    </script>
+</body>
+</html>

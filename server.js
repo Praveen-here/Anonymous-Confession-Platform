@@ -92,6 +92,32 @@ const adminSchema = new mongoose.Schema({
 
 const Admin = mongoose.model('Admin', adminSchema);
 
+// Add to server.js after other schemas
+const discussionHallSchema = new mongoose.Schema({
+    topic: { type: String, required: true },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'Admin' },
+    createdAt: { type: Date, default: Date.now },
+    expiresAt: { type: Date },
+    status: { 
+        type: String, 
+        enum: ['active', 'expired'], 
+        default: 'active',
+        index: true  // Add index for better performance
+    }
+});
+
+discussionHallSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+
+const chatMessageSchema = new mongoose.Schema({
+    hallId: { type: mongoose.Schema.Types.ObjectId, ref: 'DiscussionHall' },
+    userNumber: { type: String, required: true }, // Changed from Number to String
+    content: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+});
+
+const DiscussionHall = mongoose.model('DiscussionHall', discussionHallSchema);
+const ChatMessage = mongoose.model('ChatMessage', chatMessageSchema);
+
 // Initialize admin account
 async function initializeAdmin() {
     const adminCount = await Admin.countDocuments();
@@ -314,6 +340,155 @@ app.get('/api/posts/:postId/comments', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
+// Add to server.js before listening
+// Get active discussion hall
+// Update active halls endpoint
+app.get('/api/discussion-halls/active', async (req, res) => {
+    try {
+        const hall = await DiscussionHall.findOne({ 
+            status: 'active',
+            expiresAt: { $gt: new Date() }
+        }).sort({ createdAt: -1 });
+        
+        res.json(hall || null);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Create discussion hall (admin only)
+app.post('/api/discussion-halls', async (req, res) => {
+    try {
+        const { username, password, topic } = req.body;
+        const admin = await Admin.findOne({ username });
+        
+        if (!admin || !(await bcrypt.compare(password, admin.password))) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000); // 12 hours
+        const newHall = new DiscussionHall({ 
+            topic,
+            createdBy: admin._id,
+            expiresAt,
+            status: 'active'
+        });
+
+        await newHall.save();
+        res.status(201).json(newHall);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Get chat messages
+app.get('/api/chat-messages/:hallId', async (req, res) => {
+    try {
+        const messages = await ChatMessage.find({ 
+            hallId: new mongoose.Types.ObjectId(req.params.hallId)
+        }).sort({ createdAt: 1 });
+        res.json(messages);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Add this route to fetch single discussion hall
+// Fix the single hall endpoint
+app.get('/api/discussion-halls/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Validate MongoDB ID format
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(404).json({ message: 'Hall not found' });
+        }
+
+        const hall = await DiscussionHall.findOne({
+            _id: id,
+            status: 'active',
+            expiresAt: { $gt: new Date() }
+        });
+
+        if (!hall) return res.status(404).json({ message: 'Hall not found' });
+        res.json(hall);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+app.delete('/api/discussion-halls/:id', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const admin = await Admin.findOne({ username });
+        
+        if (!admin || !(await bcrypt.compare(password, admin.password))) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        // Delete hall and its messages
+        await DiscussionHall.findByIdAndDelete(req.params.id);
+        await ChatMessage.deleteMany({ hallId: req.params.id });
+        
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Add WebSocket support (add at top of server.js)
+const { createServer } = require('http');
+const { Server } = require('socket.io');
+const httpServer = createServer(app);
+const io = new Server(httpServer);
+
+// In server.js, update the chat-message handler
+io.on('connection', (socket) => {
+    console.log('Client connected');
+
+    socket.on('join-hall', (hallId) => {
+        socket.join(hallId);
+        console.log(`User joined hall ${hallId}`);
+    });
+
+    socket.on('chat-message', async (data) => {
+        try {
+            const message = new ChatMessage({
+                hallId: data.hallId,
+                userNumber: data.userNumber,
+                content: data.content
+            });
+            
+            await message.save();
+            io.to(data.hallId).emit('new-message', message);
+        } catch (error) {
+            console.error('Error saving message:', error);
+            socket.emit('chat-error', 'Failed to send message');
+        }
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Client disconnected');
+    });
+});
+
+// Add this cleanup job (once, at server start)
+setInterval(async () => {
+    try {
+        // Only expire halls that are past their expiration time
+        await DiscussionHall.updateMany(
+            { 
+                status: 'active',
+                expiresAt: { $lt: new Date() }
+            },
+            { $set: { status: 'expired' } }
+        );
+    } catch (error) {
+        console.error('Cleanup error:', error);
+    }
+}, 3600000); // Run every hour
+
+// Change app.listen to httpServer.listen
+httpServer.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
