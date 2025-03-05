@@ -151,31 +151,7 @@ button:hover, .btn:hover {
 }
 
 /* Splash Screen Animations */
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-20px); }
-}
-.animate-bounce {
-    animation: bounce 1.5s infinite;
-}
 
-.delay-100 {
-    animation-delay: 0.1s;
-}
-
-.delay-200 {
-    animation-delay: 0.2s;
-}
-
-#splashScreen {
-    opacity: 1;
-    transition: opacity 0.5s ease-out;
-}
-
-#splashScreen.hidden {
-    opacity: 0;
-    pointer-events: none;
-}
 
 /* Ensure proper message container sizing */
 .chat-container {
@@ -203,3 +179,38 @@ button:hover, .btn:hover {
 #sidebar h2:last-child {
     margin-bottom: 0;
 }
+
+/* Custom styles */
+#sidebar {
+    transition: transform 0.3s ease;
+}
+
+#sidebar.hidden {
+    transform: translateX(-100%);
+}
+
+#aboutSection, #createPost {
+    transition: opacity 0.3s ease;
+}
+
+#aboutSection.hidden, #createPost.hidden {
+    opacity: 0;
+    pointer-events: none;
+}   
+
+/* Splash Screen */
+
+
+/* Comment Input */
+.comment-input-container {
+    position: relative;
+}
+
+.char-counter {
+    text-align: right;
+    margin-top: -10px;
+    margin-bottom: 1rem;
+}
+
+/* Existing styles remain unchanged below this line */
+/* ... (rest of your existing CSS) ... */

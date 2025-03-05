@@ -18,154 +18,147 @@
             }
         </script>
     </head>
-    <body class="bg-white text-black"> <!-- removed font-sans as it's now default -->
-<body class="bg-white text-black font-sans">
-    <!-- Splash Screen -->
-    <div id="splashScreen" class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center transition-opacity duration-500">
-        <div class="animate-bounce mb-4">
-            <svg class="w-20 h-20 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M19 13l-7 7-7-7m14-8l-7 7-7-7"/>
-            </svg>
-        </div>
-        <div class="flex items-center space-x-2">
-            <div class="w-3 h-3 bg-black rounded-full animate-pulse"></div>
-            <div class="w-3 h-3 bg-black rounded-full animate-pulse delay-100"></div>
-            <div class="w-3 h-3 bg-black rounded-full animate-pulse delay-200"></div>
-        </div>
-    </div>
+    <body class="bg-white text-black font-sans">
+        <!-- Splash Screen -->
+        
 
-    <!-- Add this right after opening body tag -->
-<div class="fixed inset-0 -z-50">
-    <img id="backgroundImage" class="w-full h-full object-cover" alt="Background" 
-         onerror="this.style.display='none'">
-</div>
-
-    <!-- Navbar -->
-    <div class="flex items-center justify-between p-4 border-b border-gray-300">
-        <i class="fas fa-bars text-2xl cursor-pointer" id="menuButton"></i>
-        <h1 class="text-xl font-bold">BCU Confession Site</h1>
-        <div></div>
-    </div>
-
-    <!-- Banner Section -->
-<!-- Updated Banner Section -->
-<div class="pt-4">
-    <div class="max-w-[800px] md:max-w-[1400px] mx-auto px-4">
-        <div class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
-            <img id="bannerImage" 
-                 class="w-full h-48 md:h-[400px] object-cover object-center" 
-                 alt="Site Banner" 
+        <!-- Background Image -->
+        <div class="fixed inset-0 -z-50">
+            <img id="backgroundImage" class="w-full h-full object-cover" alt="Background" 
                  onerror="this.style.display='none'">
         </div>
-    </div>
-</div>
 
-    <!-- Sidebar -->
-    <div class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" id="sidebar">
-        <!-- Update the sidebar div -->
-<div class="bg-white w-64 h-full p-4 space-y-4"> <!-- Changed from space-y-4 -->
-    <h2 class="text-xl font-bold cursor-pointer" id="aboutButton">About</h2>
-    <h2 class="text-xl font-bold cursor-pointer" onclick="window.location.href='admin.html'">Admin Login</h2>
-    <h2 class="text-xl font-bold cursor-pointer" 
-    onclick="window.location.href='halls.html'">
-    Discussion Hall
-</h2>
-</div>
-    </div>
-
-    <!-- About Section -->
-    <div class="fixed inset-0 bg-white z-50 hidden" id="aboutSection">
-        <div class="p-4">
-            <i class="fas fa-arrow-left text-2xl cursor-pointer" id="aboutBackButton"></i>
-            <h1 class="text-xl font-bold">About</h1>
-            <p>Got a secret? A funny campus moment? A bold thought you just need to share? This is BCU’s anonymous confession site, where you can rant, confess, joke, and spill the tea—all without revealing your name! 😎 Your identity stays hidden, your words get heard. So go ahead, say what’s on your mind—no names, no pressure, just pure fun! 😂🎭</p>
+        <!-- Navbar -->
+        <div class="flex items-center justify-between p-4 border-b border-gray-300">
+            <i class="fas fa-bars text-2xl cursor-pointer" id="menuButton"></i>
+            <h1 class="text-xl font-bold">BCU Confession Site</h1>
+            <div></div>
         </div>
-    </div>
 
-    <!-- Main Content -->
-<div class="p-4 space-y-6" id="postsContainer">  <!-- Changed from space-y-4 to space-y-6 -->
-    <!-- Posts and comments will be dynamically loaded here -->
-</div>
+        <!-- Banner Section -->
+        <div class="pt-4">
+            <div class="max-w-[800px] md:max-w-[1400px] mx-auto px-4">
+                <div class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+                    <img id="bannerImage" 
+                         class="w-full h-48 md:h-[400px] object-cover object-center" 
+                         alt="Site Banner" 
+                         onerror="this.style.display='none'">
+                </div>
+            </div>
+        </div>
 
-    <!-- Floating Action Button -->
-    <div class="fixed bottom-4 right-4">
-        <button class="bg-black text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center" id="createPostButton">
-            <i class="fas fa-plus text-2xl"></i>
-        </button>
-    </div>
+        <!-- Sidebar -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" id="sidebar">
+            <div class="bg-white w-64 h-full p-4 space-y-4">
+                <h2 class="text-xl font-bold cursor-pointer" id="aboutButton">About</h2>
+                <h2 class="text-xl font-bold cursor-pointer" onclick="window.location.href='admin.html'">Admin Login</h2>
+                <h2 class="text-xl font-bold cursor-pointer" onclick="window.location.href='halls.html'">
+                    Discussion Hall
+                </h2>
+            </div>
+        </div>
 
-    <!-- Create Post -->
-    <!-- Update Create Post Section -->
-<div class="fixed inset-0 bg-white z-50 hidden" id="createPost">
-    <div class="flex items-center justify-between p-4 border-b border-gray-300">
-        <i class="fas fa-arrow-left text-2xl cursor-pointer" id="createPostBackButton"></i>
-        <h1 class="text-xl font-bold">Create</h1>
-        <button class="border border-black px-4 py-2 rounded-lg" id="submitPostButton">Post</button>
-    </div>
-    <div class="p-4">
-        <textarea class="w-full h-32 p-2 border border-gray-300 rounded-lg mb-2" 
-                  placeholder="Add a caption..." id="postContent"></textarea>
-        <input type="file" id="imageInput" accept="image/*" class="hidden" />
-        <button id="imageUploadButton" class="text-gray-600 p-2 rounded-lg border border-gray-300">
-            <i class="fas fa-image mr-2"></i>Add Image
-        </button>
-        <div id="imagePreview" class="mt-4"></div>
-    </div>
-</div>
+        <!-- About Section -->
+        <div class="fixed inset-0 bg-white z-50 hidden" id="aboutSection">
+            <div class="p-4">
+                <i class="fas fa-arrow-left text-2xl cursor-pointer" id="aboutBackButton"></i>
+                <h1 class="text-xl font-bold">About</h1>
+                <p>Got a secret? A funny campus moment? A bold thought you just need to share? This is BCU’s anonymous confession site, where you can rant, confess, joke, and spill the tea—all without revealing your name! 😎 Your identity stays hidden, your words get heard. So go ahead, say what’s on your mind—no names, no pressure, just pure fun! 😂🎭</p>
+            </div>
+        </div>
 
-    <script src="finalscript.js"></script>
-    <script>
-        // Unified image loader with force reload
-        function forceImageReload(imgElement, url) {
-            const timestamp = Date.now();
-            imgElement.src = `${url.split('?')[0]}?ts=${timestamp}`;
-        }
-    
-        async function loadBanner() {
-            try {
-                const bannerImage = document.getElementById('bannerImage');
-                const response = await fetch(`/api/banner?ts=${Date.now()}`);
-                const banner = await response.json();
-                
-                if (banner.imageUrl) {
-                    forceImageReload(bannerImage, banner.imageUrl);
-                    bannerImage.style.display = 'block';
-                } else {
+        <!-- Main Content -->
+        <div class="p-4 space-y-6" id="postsContainer">
+            <!-- Posts and comments will be dynamically loaded here -->
+        </div>
+
+        <!-- Floating Action Button -->
+        <div class="fixed bottom-4 right-4">
+            <button class="bg-black text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center" id="createPostButton">
+                <i class="fas fa-plus text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Create Post Section -->
+        <div class="fixed inset-0 bg-white z-50 hidden" id="createPost">
+            <div class="flex items-center justify-between p-4 border-b border-gray-300">
+                <i class="fas fa-arrow-left text-2xl cursor-pointer" id="createPostBackButton"></i>
+                <h1 class="text-xl font-bold">Create</h1>
+                <button class="border border-black px-4 py-2 rounded-lg" id="submitPostButton">Post</button>
+            </div>
+            <div class="p-4">
+                <div class="comment-input-container">
+                    <textarea class="w-full h-32 p-2 border border-gray-300 rounded-lg mb-2" 
+                            placeholder="Add a caption..." 
+                            id="postContent"
+                            maxlength="300"></textarea>
+                    <div class="char-counter text-sm text-gray-500">
+                        <span class="current">0</span>/300
+                    </div>
+                </div>
+                <input type="file" id="imageInput" accept="image/*" class="hidden" />
+                <button id="imageUploadButton" class="text-gray-600 p-2 rounded-lg border border-gray-300">
+                    <i class="fas fa-image mr-2"></i>Add Image
+                </button>
+                <div id="imagePreview" class="mt-4"></div>
+            </div>
+        </div>
+
+        <script src="finalscript.js"></script>
+        <script>
+            // Unified image loader with force reload
+            function forceImageReload(imgElement, url) {
+                const timestamp = Date.now();
+                imgElement.src = `${url.split('?')[0]}?ts=${timestamp}`;
+            }
+        
+            async function loadBanner() {
+                try {
+                    const bannerImage = document.getElementById('bannerImage');
+                    const response = await fetch(`/api/banner?ts=${Date.now()}`);
+                    const banner = await response.json();
+                    
+                    if (banner.imageUrl) {
+                        forceImageReload(bannerImage, banner.imageUrl);
+                        bannerImage.style.display = 'block';
+                    } else {
+                        bannerImage.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Banner load error:', error);
                     bannerImage.style.display = 'none';
                 }
-            } catch (error) {
-                console.error('Banner load error:', error);
-                bannerImage.style.display = 'none';
             }
-        }
-    
-        async function loadBackground() {
-            try {
-                const bgImage = document.getElementById('backgroundImage');
-                const response = await fetch(`/api/background?ts=${Date.now()}`);
-                const background = await response.json();
-                
-                if (background.imageUrl) {  
-                    forceImageReload(bgImage, background.imageUrl);
-                    bgImage.style.display = 'block';
-                } else {
-                    bgImage.style.display = 'none';
+        
+            async function loadBackground() {
+                try {
+                    const bgImage = document.getElementById('backgroundImage');
+                    const response = await fetch(`/api/background?ts=${Date.now()}`);
+                    const background = await response.json();
+                    
+                    if (background.imageUrl) {  
+                        forceImageReload(bgImage, background.imageUrl);
+                        bgImage.style.display = 'block';
+                    } else {
+                        bgImage.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Background load error:', error);
                 }
-            } catch (error) {
-                console.error('Background load error:', error);
             }
-        }
-    
-        // Initial loads
-        window.addEventListener('DOMContentLoaded', () => {
-            loadBanner();
-            loadBackground();
-        });
-    
-        // Update listeners
-        window.addEventListener('backgroundUpdated', loadBackground);
-        window.addEventListener('bannerUpdated', loadBanner);
-    </script>
-</body>
+        
+            // Initial loads
+            window.addEventListener('DOMContentLoaded', () => {
+                loadBanner();
+                loadBackground();
+                
+                // Character counter
+                
+            });
+        
+            // Update listeners
+            window.addEventListener('backgroundUpdated', loadBackground);
+            window.addEventListener('bannerUpdated', loadBanner);
+        </script>
+    </body>
 </html>
