@@ -58,8 +58,7 @@ mongoose.connect(mongoURI, {
 // Schemas
 const postSchema = new mongoose.Schema({
     content: { type: String, required: false },
-    imageUrl: { type: String, required: false },    
-    content: { type: String, required: true },
+    imageUrl: { type: String, required: false },
     createdAt: { type: Date, default: Date.now },
     comments: [{
         content: { type: String, required: true },
