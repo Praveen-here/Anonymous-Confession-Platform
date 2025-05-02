@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-        <title>BCU Confession Site</title>
+        <title>Anonymous Confession Platform</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
         <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
@@ -29,14 +29,25 @@
         </div>
 
         <!-- Navbar -->
-        <div class="flex items-center justify-between p-4 border-b border-gray-300">
-            <i class="fas fa-bars text-2xl cursor-pointer" id="menuButton"></i>
-            <h1 class="text-xl font-bold">BCU Confession Site</h1>
-            <div></div>
+        <header class="fixed top-0 left-0 w-full z-50 bg-white border-b border-gray-300">
+    <div class="flex items-center justify-between p-4">
+        <i class="fas fa-bars text-2xl cursor-pointer" id="menuButton"></i>
+        
+        <div class="text-center">
+            <h1 class="text-xl font-extrabold tracking-wide leading-tight">ANONYMOUS</h1>
+            <p class="text-sm font-normal -mt-1">Confession Platform</p>
         </div>
+        
+        <div class="w-6"></div> <!-- Empty spacer to balance the left icon -->
+    </div>
+</header>
+
+
 
         <!-- Banner Section -->
-        <div class="pt-4">
+        <!-- Banner Section -->
+<div class="pt-20"> <!-- Increased from pt-4 to pt-20 -->
+
             <div class="max-w-[800px] md:max-w-[1400px] mx-auto px-4">
                 <div class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
                     <img id="bannerImage" 
@@ -48,15 +59,15 @@
         </div>
 
         <!-- Sidebar -->
-        <div class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden" id="sidebar">
-            <div class="bg-white w-64 h-full p-4 space-y-4">
-                <h2 class="text-xl font-bold cursor-pointer" id="aboutButton">About</h2>
-                <h2 class="text-xl font-bold cursor-pointer" onclick="window.location.href='admin.html'">Admin Login</h2>
-                <h2 class="text-xl font-bold cursor-pointer" onclick="window.location.href='halls.html'">
-                    Discussion Hall
-                </h2>
-            </div>
-        </div>
+<div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-white z-[9999] shadow-lg p-4 space-y-4 hidden">
+    <!-- Close Button -->
+    <button onclick="closeSidebar()" class="text-black text-2xl font-bold">×</button>
+
+    <!-- Sidebar Items -->
+    <h2 class="text-xl font-bold cursor-pointer" onclick="showAboutSection()">About</h2>
+    <h2 class="text-xl font-bold cursor-pointer" onclick="window.location.href='admin.html'">Admin Login</h2>
+    <h2 class="text-xl font-bold cursor-pointer" onclick="window.location.href='halls.html'">Discussion Hall</h2>
+</div>
 
         <!-- About Section -->
         <div class="fixed inset-0 bg-white z-50 hidden" id="aboutSection">
@@ -155,6 +166,19 @@
             // Update listeners
             window.addEventListener('backgroundUpdated', loadBackground);
             window.addEventListener('bannerUpdated', loadBanner);
+
+            
+  function showAboutSection() {
+    // Hide sidebar
+    document.getElementById("sidebar").classList.add("hidden");
+    // Show about section
+    document.getElementById("aboutSection").classList.remove("hidden");
+  }
+
+  // Handle back button inside About section
+  document.getElementById("aboutBackButton").addEventListener("click", function () {
+    document.getElementById("aboutSection").classList.add("hidden");
+  });
         </script>
     </body>
 </html>
