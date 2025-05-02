@@ -46,17 +46,18 @@
 
         <!-- Banner Section -->
         <!-- Banner Section -->
-<div class="pt-20"> <!-- Increased from pt-4 to pt-20 -->
-
-            <div class="max-w-[800px] md:max-w-[1400px] mx-auto px-4">
-                <div class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
-                    <img id="bannerImage" 
-                         class="w-full h-48 md:h-[400px] object-cover object-center" 
-                         alt="Site Banner" 
-                         onerror="this.style.display='none'">
-                </div>
-            </div>
+<div class="pt-20">
+    <div class="max-w-[800px] md:max-w-[1400px] mx-auto px-4">
+        <div class="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+            <a href="https://github.com/Praveen-here/Anonymous-Confession-Platform/releases/download/v1.0/Anonymous.Confession.Platform.apk" target="_blank">
+                <img id="bannerImage" class="w-full h-48 md:h-[400px] object-cover object-center" 
+                     alt="Site Banner" 
+                     onerror="this.style.display='none'">
+            </a>
         </div>
+    </div>
+</div>
+
 
         <!-- Sidebar -->
 <div id="sidebar" class="fixed top-0 left-0 h-full w-64 bg-white z-[9999] shadow-lg p-4 space-y-4 hidden">
@@ -70,13 +71,34 @@
 </div>
 
         <!-- About Section -->
-        <div class="fixed inset-0 bg-white z-50 hidden" id="aboutSection">
-            <div class="p-4">
-                <i class="fas fa-arrow-left text-2xl cursor-pointer" id="aboutBackButton"></i>
-                <h1 class="text-xl font-bold">About</h1>
-                <p>Got a secret? A funny campus moment? A bold thought you just need to share? This is BCU’s anonymous confession site, where you can rant, confess, joke, and spill the tea—all without revealing your name! 😎 Your identity stays hidden, your words get heard. So go ahead, say what’s on your mind—no names, no pressure, just pure fun! 😂🎭</p>
-            </div>
+<div class="fixed inset-0 bg-white z-50 hidden" id="aboutSection">
+    <div class="p-4">
+        <i class="fas fa-arrow-left text-2xl cursor-pointer" id="aboutBackButton"></i>
+        <h1 class="text-xl font-bold">About us</h1>
+        <p>
+            Our platform provides a safe, secure, and anonymous space for individuals to express their thoughts, feelings, and confessions without judgment. Designed with privacy in mind, we prioritize confidentiality and transparency, ensuring users can freely share without fear. Whether you're looking for a supportive community or simply need a space to vent, our platform offers a place for honest self-expression.
+
+            Your voice matters, and we’re here to listen.
+        </p>
+
+        <!-- Logo and Social Icons in One Row -->
+        <div class="flex items-center gap-4 mt-4">
+            <!-- Logo -->
+            <img src="https://res.cloudinary.com/df8enyk6y/image/upload/v1746189886/Anonymous%20Confession%20Platform%20Logo/vt9xelg1bkoudrr2x9ao.jpg" alt="Logo" width="42" height="42">
+
+            <!-- Instagram Icon -->
+            <a href="https://www.instagram.com/anonymousconfessionplatform" target="_blank">
+                <i class="fab fa-instagram text-2xl"></i>
+            </a>
+
+            <!-- Twitter Icon -->
+            <a href="https://twitter.com/your-twitter-handle" target="_blank">
+                <i class="fab fa-twitter text-2xl"></i>
+            </a>
         </div>
+    </div>
+</div>
+
 
         <!-- Main Content -->
         <div class="p-4 space-y-6" id="postsContainer">

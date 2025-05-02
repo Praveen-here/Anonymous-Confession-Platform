@@ -99,6 +99,7 @@ body {
     padding: 1rem;
     max-width: 800px;
     margin: 0 auto;
+    
 }
 
 /* Soften input fields */
@@ -124,7 +125,7 @@ button:hover, .btn:hover {
     transform: scale(1.02);
 }
 
-/* Enhanced card hover effect */
+/* Enhanced card hover effect, REAL POST */
 #postsContainer > div {
     transition: all 0.3s ease;
 }
