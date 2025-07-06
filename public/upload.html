@@ -23,26 +23,26 @@
     <div class="bg-white p-6 shadow-lg rounded-[45px]">
       <h1 class="text-xl font-bold mb-4 text-center">Upload Background</h1>
       <form id="uploadBackgroundForm" class="space-y-4">
-        <input type="file" id="backgroundImage" accept="image/*" class="w-full border p-2 rounded-[45px]" />
-        <button type="submit" class="w-full bg-black text-white py-2 rounded-[45px]">
+        <input type="file" id="backgroundImage" accept="image/*" class="w-full border p-2 rounded-[24px]" />
+        <button type="submit" class="w-full bg-black text-white py-2 rounded-[24px]">
           Update Background
         </button>
       </form>
     </div>
 
     <!-- Create Discussion Hall -->
-    <div class="bg-white p-6 shadow-lg rounded-[45px]">
+    <div class="bg-white p-6 shadow-lg rounded-[24px]">
       <h1 class="text-xl font-bold mb-4 text-center">Create Discussion Hall</h1>
       <form id="createHallForm" class="space-y-4">
-        <input type="text" id="hallTopic" placeholder="Discussion Topic" class="w-full border p-2 rounded-[45px]" />
-        <button type="submit" class="w-full bg-black text-white py-2 rounded-[45px]">
+        <input type="text" id="hallTopic" placeholder="Discussion Topic" class="w-full border p-2 rounded-[24px]" />
+        <button type="submit" class="w-full bg-black text-white py-2 rounded-[24px]">
           Create Discussion Hall
         </button>
       </form>
     </div>
 
     <!-- Active Discussion Halls -->
-    <div class="bg-white p-6 shadow-lg rounded-[45px]">
+    <div class="bg-white p-6 shadow-lg rounded-[24px]">
       <h1 class="text-xl font-bold mb-4 text-center">Active Discussion Halls</h1>
       <div id="activeHalls" class="space-y-2">
         <!-- Halls will be loaded here -->
@@ -150,7 +150,7 @@
         }
 
         container.innerHTML = halls.map(hall => `
-          <div class="flex items-center justify-between p-3 border rounded-[45px] bg-gray-50">
+          <div class="flex items-center justify-between p-3 border rounded-[24px] bg-gray-50">
             <div class="truncate flex-1">
               <span class="font-medium">${hall.topic}</span>
               <p class="text-xs text-gray-500">Expires: ${new Date(hall.expiresAt).toLocaleString()}</p>
