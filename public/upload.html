@@ -1,202 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Upload</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Upload</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-
-    <div class="bg-white p-6 rounded-lg shadow-lg w-96">
-        <!-- Banner Upload -->
-        <h1 class="text-xl font-bold mb-4 text-center">Upload Banner</h1>
-        <form id="uploadBannerForm" class="mb-8">
-            <input type="file" id="bannerImage" accept="image/*" class="mb-4">
-            <button type="submit" class="w-full bg-black text-white py-2 rounded">
-                Update Banner
-            </button>
-        </form>
-
-        <!-- Background Upload -->
-        <h1 class="text-xl font-bold mb-4 text-center">Upload Background</h1>
-        <form id="uploadBackgroundForm">
-            <input type="file" id="backgroundImage" accept="image/*" class="mb-4">
-            <button type="submit" class="w-full bg-black text-white py-2 rounded">
-                Update Background
-            </button>
-        </form>
-
-        <div class="bg-white p-6 rounded-lg shadow-lg w-96 mt-8">
-            <h1 class="text-xl font-bold mb-4 text-center">Create Discussion Hall</h1>
-            <form id="createHallForm">
-                <input type="text" id="hallTopic" placeholder="Discussion Topic" 
-                       class="w-full border p-2 rounded mb-4">
-                <button type="submit" class="w-full bg-black text-white py-2 rounded">
-                    Create Discussion Hall
-                </button>
-            </form>
-        </div>
-
-        <div class="bg-white p-6 rounded-lg shadow-lg w-96 mt-8">
-            <h1 class="text-xl font-bold mb-4 text-center">Active Discussion Halls</h1>
-            <div id="activeHalls" class="space-y-2">
-                <!-- Halls will be loaded here -->
-            </div>
-        </div>
-
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+  <div class="w-full max-w-xl space-y-6">
+    <!-- Banner Upload -->
+    <div class="bg-white p-6 shadow-lg rounded-[45px]">
+      <h1 class="text-xl font-bold mb-4 text-center">Upload Banner</h1>
+      <form id="uploadBannerForm" class="space-y-4">
+        <input type="file" id="bannerImage" accept="image/*" class="w-full border p-2 rounded-[45px]" />
+        <button type="submit" class="w-full bg-black text-white py-2 rounded-[24px]">
+          Update Banner
+        </button>
+      </form>
     </div>
 
-    <script>
-        async function handleUpload(fieldName, inputId, endpoint) {
-            const stored = localStorage.getItem('tempCredentials');
-            if (!stored) {
-                alert('Session expired');
-                window.location.href = 'admin.html';
-                return;
-            }
-            
-            const { username, password } = JSON.parse(stored);
-            const fileInput = document.getElementById(inputId);
-            
-            if (!fileInput.files.length) {
-                alert('Please select a file first');
-                return;
-            }
+    <!-- Background Upload -->
+    <div class="bg-white p-6 shadow-lg rounded-[45px]">
+      <h1 class="text-xl font-bold mb-4 text-center">Upload Background</h1>
+      <form id="uploadBackgroundForm" class="space-y-4">
+        <input type="file" id="backgroundImage" accept="image/*" class="w-full border p-2 rounded-[45px]" />
+        <button type="submit" class="w-full bg-black text-white py-2 rounded-[45px]">
+          Update Background
+        </button>
+      </form>
+    </div>
 
-            try {
-                const formData = new FormData();
-                formData.append(fieldName, fileInput.files[0]);
-                formData.append('username', username);
-                formData.append('password', password);
+    <!-- Create Discussion Hall -->
+    <div class="bg-white p-6 shadow-lg rounded-[45px]">
+      <h1 class="text-xl font-bold mb-4 text-center">Create Discussion Hall</h1>
+      <form id="createHallForm" class="space-y-4">
+        <input type="text" id="hallTopic" placeholder="Discussion Topic" class="w-full border p-2 rounded-[45px]" />
+        <button type="submit" class="w-full bg-black text-white py-2 rounded-[45px]">
+          Create Discussion Hall
+        </button>
+      </form>
+    </div>
 
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    body: formData
-                });
+    <!-- Active Discussion Halls -->
+    <div class="bg-white p-6 shadow-lg rounded-[45px]">
+      <h1 class="text-xl font-bold mb-4 text-center">Active Discussion Halls</h1>
+      <div id="activeHalls" class="space-y-2">
+        <!-- Halls will be loaded here -->
+      </div>
+    </div>
+  </div>
 
-                const result = await response.json();
-                
-                if (response.ok) {
-                    alert(result.message);
-                    // Refresh parent window before clearing input
-                    if (window.opener) {
-                        const message = fieldName === 'banner' ? 'bannerRefresh' : 'backgroundRefresh';
-                        window.opener.postMessage(message, '*');
-                    }
-                    // Redirect without clearing input (let navigation handle it)
-                    window.location.href = "/";
-                } else {
-                    throw new Error(result.message || 'Upload failed');
-                }
-            } catch (error) {
-                alert(error.message || 'Network error: Please check your connection');
-                // Preserve selected file on error
-                fileInput.value = fileInput.value; // Reset without clearing
-            }
-        }
+  <script>
+    async function handleUpload(fieldName, inputId, endpoint) {
+      const stored = localStorage.getItem('tempCredentials');
+      if (!stored) {
+        alert('Session expired');
+        window.location.href = 'admin.html';
+        return;
+      }
 
-        // Form handlers with enhanced error prevention
-        function setupFormHandler(formId, handler) {
-            const form = document.getElementById(formId);
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                handler();
-            });
-        }
+      const { username, password } = JSON.parse(stored);
+      const fileInput = document.getElementById(inputId);
 
-        setupFormHandler('uploadBannerForm', () => {
-            handleUpload('banner', 'bannerImage', '/api/upload');
+      if (!fileInput.files.length) {
+        alert('Please select a file first');
+        return;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append(fieldName, fileInput.files[0]);
+        formData.append('username', username);
+        formData.append('password', password);
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          body: formData
         });
 
-        setupFormHandler('uploadBackgroundForm', () => {
-            handleUpload('background', 'backgroundImage', '/api/upload/background');
-        });
+        const result = await response.json();
 
-        document.getElementById('createHallForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const stored = JSON.parse(localStorage.getItem('tempCredentials'));
-    const topic = document.getElementById('hallTopic').value;
+        if (response.ok) {
+          alert(result.message);
+          if (window.opener) {
+            const message = fieldName === 'banner' ? 'bannerRefresh' : 'backgroundRefresh';
+            window.opener.postMessage(message, '*');
+          }
+          window.location.href = "/";
+        } else {
+          throw new Error(result.message || 'Upload failed');
+        }
+      } catch (error) {
+        alert(error.message || 'Network error: Please check your connection');
+        fileInput.value = fileInput.value;
+      }
+    }
 
-    try {
+    function setupFormHandler(formId, handler) {
+      const form = document.getElementById(formId);
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        handler();
+      });
+    }
+
+    setupFormHandler('uploadBannerForm', () => {
+      handleUpload('banner', 'bannerImage', '/api/upload');
+    });
+
+    setupFormHandler('uploadBackgroundForm', () => {
+      handleUpload('background', 'backgroundImage', '/api/upload/background');
+    });
+
+    document.getElementById('createHallForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const stored = JSON.parse(localStorage.getItem('tempCredentials'));
+      const topic = document.getElementById('hallTopic').value;
+
+      try {
         const response = await fetch('/api/discussion-halls', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username: stored.username,
-                password: stored.password,
-                topic
-            })
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: stored.username,
+            password: stored.password,
+            topic
+          })
         });
 
         if (response.ok) {
-            alert('Discussion hall created successfully!');
-            document.getElementById('hallTopic').value = '';
+          alert('Discussion hall created successfully!');
+          document.getElementById('hallTopic').value = '';
+          loadActiveHalls();
         }
-    } catch (error) {
+      } catch (error) {
         alert('Error creating discussion hall');
-    }
-});
+      }
+    });
 
-// Update loadActiveHalls function
-async function loadActiveHalls() {
-    try {
+    async function loadActiveHalls() {
+      const container = document.getElementById('activeHalls');
+      try {
         const response = await fetch('/api/discussion-halls/active');
         const halls = await response.json();
-        const container = document.getElementById('activeHalls');
-        
-        if (halls.length === 0) {
-            container.innerHTML = `<p class="text-gray-500 text-center">No active discussion halls</p>`;
-            return;
+
+        if (!halls.length) {
+          container.innerHTML = `<p class="text-gray-500 text-center">No active discussion halls</p>`;
+          return;
         }
 
         container.innerHTML = halls.map(hall => `
-            <div class="flex items-center justify-between p-2 border rounded mb-2">
-                <div class="truncate flex-1">
-                    <span class="font-medium">${hall.topic}</span>
-                    <p class="text-xs text-gray-500">
-                        Expires: ${new Date(hall.expiresAt).toLocaleString()}
-                    </p>
-                </div>
-                <button onclick="deleteHall('${hall._id}')" 
-                        class="text-red-500 hover:text-red-700 ml-4">
-                    <i class="fas fa-trash"></i>
-                </button>
+          <div class="flex items-center justify-between p-3 border rounded-[45px] bg-gray-50">
+            <div class="truncate flex-1">
+              <span class="font-medium">${hall.topic}</span>
+              <p class="text-xs text-gray-500">Expires: ${new Date(hall.expiresAt).toLocaleString()}</p>
             </div>
+            <button onclick="deleteHall('${hall._id}')" class="text-red-500 hover:text-red-700 ml-4">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
         `).join('');
-    } catch (error) {
+      } catch (error) {
         console.error('Error loading halls:', error);
         container.innerHTML = `<p class="text-red-500 text-center">Error loading halls</p>`;
+      }
     }
-}
 
-async function deleteHall(hallId) {
-    if (!confirm('Are you sure you want to delete this hall?')) return;
-    
-    try {
+    async function deleteHall(hallId) {
+      if (!confirm('Are you sure you want to delete this hall?')) return;
+
+      try {
         const stored = JSON.parse(localStorage.getItem('tempCredentials'));
         const response = await fetch(`/api/discussion-halls/${hallId}`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                username: stored.username,
-                password: stored.password
-            })
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: stored.username,
+            password: stored.password
+          })
         });
 
         if (response.ok) {
-            loadActiveHalls();
+          loadActiveHalls();
         }
-    } catch (error) {
+      } catch (error) {
         alert('Error deleting hall');
+      }
     }
-}
 
-document.head.insertAdjacentHTML('beforeend', 
-    '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">');
+    document.head.insertAdjacentHTML(
+      'beforeend',
+      '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">'
+    );
 
-// Call this when page loads
-loadActiveHalls();
-    </script>
+    loadActiveHalls();
+  </script>
 </body>
 </html>

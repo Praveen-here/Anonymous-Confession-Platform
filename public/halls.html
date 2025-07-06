@@ -1,60 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discussion Halls</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Discussion Halls</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 min-h-screen">
-    <div class="max-w-2xl mx-auto p-4">
-        <center><h1 class="text-2xl font-bold mb-6">Active Discussion Halls</h1></center>
-        <div id="hallsContainer" class="space-y-4">
-            <!-- Halls will be loaded here -->
-        </div>
+<body class="min-h-screen bg-[url('https://res.cloudinary.com/df8enyk6y/image/upload/v1751818206/Picsart_25-07-06_21-36-12-513_eafdgq.jpg')] bg-cover bg-center bg-no-repeat bg-fixed text-gray-800">
+
+  <div class="min-h-screen flex flex-col items-center justify-start p-6">
+    <h1 class="text-2xl font-bold mb-6 text-center bg-white bg-opacity-90 px-6 py-2 rounded-[24px]">
+      Active Discussion Halls
+    </h1>
+    <div id="hallsContainer" class="space-y-6 w-full max-w-2xl">
+      <!-- Halls will be loaded here -->
     </div>
+  </div>
 
-    <script>
-        async function loadHalls() {
-            try {
-                const response = await fetch('/api/discussion-halls/active');
-                const halls = await response.json();
-                const container = document.getElementById('hallsContainer');
-                
-                if (halls.length === 0) {
-                    container.innerHTML = `
-                        <div class="bg-white p-4 rounded-lg shadow text-center">
-                            <p class="text-gray-500">No active discussion halls available</p>
-                        </div>
-                    `;
-                    return;
-                }
+  <script>
+    async function loadHalls() {
+      try {
+        const response = await fetch('/api/discussion-halls/active');
+        const halls = await response.json();
+        const container = document.getElementById('hallsContainer');
 
-                container.innerHTML = halls.map(hall => `
-                    <div class="bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <h3 class="font-semibold">${hall.topic}</h3>
-                                <p class="text-sm text-gray-500">
-                                    Created ${new Date(hall.createdAt).toLocaleDateString()}
-                                </p>
-                            </div>
-                            <button onclick="window.location.href='chat.html?hall=${hall._id}'" 
-                                    class="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800">
-                                Join
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (error) {
-                console.error('Error loading halls:', error);
-                alert('Failed to load discussion halls');
-            }
+        if (halls.length === 0) {
+          container.innerHTML = `
+            <div class="bg-white p-6 rounded-[24px] shadow text-center">
+              <p class="text-gray-500">No active discussion halls available</p>
+            </div>
+          `;
+          return;
         }
 
-        // Load halls when page loads
-        window.addEventListener('DOMContentLoaded', loadHalls);
-    </script>
+        container.innerHTML = halls.map(hall => `
+          <div class="bg-white bg-opacity-95 p-6 rounded-[24px] shadow hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <h3 class="font-semibold text-lg">${hall.topic}</h3>
+                <p class="text-sm text-gray-500">Created ${new Date(hall.createdAt).toLocaleDateString()}</p>
+              </div>
+              <button onclick="window.location.href='chat.html?hall=${hall._id}'" 
+                      class="bg-black text-white px-5 py-2 rounded-[45px] hover:bg-gray-800 transition-colors">
+                Join
+              </button>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        console.error('Error loading halls:', error);
+        alert('Failed to load discussion halls');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadHalls);
+  </script>
 </body>
 </html>

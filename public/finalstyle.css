@@ -128,7 +128,9 @@ button:hover, .btn:hover {
 /* Enhanced card hover effect, REAL POST */
 #postsContainer > div {
     transition: all 0.3s ease;
+    border-radius: 24px;
 }
+
 
 #postsContainer > div:hover {
     transform: translateY(-2px);

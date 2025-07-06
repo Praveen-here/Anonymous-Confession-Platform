@@ -1,45 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-80">
-        <h1 class="text-xl font-bold mb-4 text-center">Admin Login</h1>
-        <input type="text" id="username" placeholder="Username" class="w-full border p-2 rounded mb-2">
-        <input type="password" id="password" placeholder="Password" class="w-full border p-2 rounded mb-2">
-        <button onclick="login()" class="w-full bg-black text-white py-2 rounded">Login</button>
-    </div>
+<body class="h-screen w-screen bg-[url('https://res.cloudinary.com/df8enyk6y/image/upload/v1751819019/Picsart_25-07-06_21-53-21-391_etbfcy.jpg')] bg-cover bg-center bg-no-repeat bg-fixed flex items-center justify-center">
 
-    <!-- admin.html -->
-<!-- admin.html -->
-<script>
+  <div class="bg-white bg-opacity-95 p-6 rounded-[24px] shadow-lg w-80">
+    <h1 class="text-xl font-bold mb-4 text-center">Admin Login</h1>
+    <input type="text" id="username" placeholder="Username" class="w-full border p-2 rounded mb-2">
+    <input type="password" id="password" placeholder="Password" class="w-full border p-2 rounded mb-2">
+    <button onclick="login()" class="w-full bg-black text-white py-2 rounded">Login</button>
+  </div>
+
+  <script>
     async function login() {
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-    
-        try {
-            const response = await fetch('/api/admin/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-    
-            const result = await response.json();
-            if (result.success) {
-                // Store credentials temporarily in localStorage
-                localStorage.setItem('tempCredentials', JSON.stringify({ username, password }));
-                window.location.href = "upload.html";
-            } else {
-                alert('Invalid credentials!');
-            }
-        } catch (error) {
-            alert('Login failed');
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      try {
+        const response = await fetch('/api/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          localStorage.setItem('tempCredentials', JSON.stringify({ username, password }));
+          window.location.href = "upload.html";
+        } else {
+          alert('Invalid credentials!');
         }
+      } catch (error) {
+        alert('Login failed');
+      }
     }
-    </script>
+  </script>
 </body>
 </html>
