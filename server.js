@@ -10,7 +10,7 @@ const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const { moderateText } = require('./utils/moderation'); // Make sure this file exists
+const { moderateText, loadBannedWords } = require('./utils/moderation');
 
 // Configure Cloudinary
 cloudinary.config({
@@ -51,10 +51,12 @@ mongoose.connect(mongoURI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
-.then(() => {
+.then(async () => {
     console.log('Connected to MongoDB Atlas');
+    await loadBannedWords(); // ✅ load banned words from DB into memory
     initializeAdmin();
 })
+
 .catch(err => console.error('MongoDB Atlas connection error:', err));
 
 // Schemas
@@ -146,6 +148,26 @@ app.post('/api/admin/login', async (req, res) => {
         res.status(500).json({ success: false });
     }
 });
+
+app.post('/api/moderation/keywords', async (req, res) => {
+    const { username, password, words } = req.body;
+
+    const admin = await Admin.findOne({ username });
+    if (!admin || !(await bcrypt.compare(password, admin.password))) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    // Update banned_words document in DB
+    await mongoose.connection.db.collection('banned_words').updateOne(
+        {},
+        { $set: { words } },
+        { upsert: true }
+    );
+
+    await loadBannedWords(); // ✅ reload into memory
+    res.json({ success: true, message: 'Banned words updated' });
+});
+
 
 app.post('/api/upload/post', upload.single('image'), async (req, res) => {
     try {
