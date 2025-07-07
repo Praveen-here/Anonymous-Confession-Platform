@@ -3,7 +3,8 @@ const axios = require('axios');
 // Custom keywords to block (add more as needed)
 const bannedKeywords = [
   "gandu", "nkn", "namman", "nmn", "vade",
-  "shede", "sade", "sede", "nanmagne", "akka tangi"
+  "shede", "sade", "sede", "nanmagne", "akka tangi",
+  "chutiya",
 ];
 
 // Normalize and check for banned words
